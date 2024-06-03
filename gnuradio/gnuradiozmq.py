@@ -6,8 +6,9 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Not titled yet
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.10.7.0
 
+from packaging.version import Version as StrictVersion
 from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import blocks
@@ -51,9 +52,10 @@ class gnuradiozmq(gr.top_block, Qt.QWidget):
         self.settings = Qt.QSettings("GNU Radio", "gnuradiozmq")
 
         try:
-            geometry = self.settings.value("geometry")
-            if geometry:
-                self.restoreGeometry(geometry)
+            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+                self.restoreGeometry(self.settings.value("geometry").toByteArray())
+            else:
+                self.restoreGeometry(self.settings.value("geometry"))
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
@@ -66,7 +68,7 @@ class gnuradiozmq(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 5, "tcp://192.168.1.21:5555", 100, False, (-1), '', False)
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 5, "tcp://127.0.0.1:5555", 100, False, (-1), '', False)
         self.qtgui_waterfall_sink_x_0_0_0_0_0 = qtgui.waterfall_sink_c(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
@@ -243,11 +245,14 @@ class gnuradiozmq(gr.top_block, Qt.QWidget):
 
         self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.blocks_vector_to_streams_0 = blocks.vector_to_streams(gr.sizeof_gr_complex*1, 5)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/home/mikko/AegirSDR/gnuradio/iq.bin', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
 
 
         ##################################################
         # Connections
         ##################################################
+        self.connect((self.blocks_vector_to_streams_0, 2), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_vector_to_streams_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
         self.connect((self.blocks_vector_to_streams_0, 1), (self.qtgui_waterfall_sink_x_0_0, 0))
         self.connect((self.blocks_vector_to_streams_0, 2), (self.qtgui_waterfall_sink_x_0_0_0, 0))
@@ -280,6 +285,9 @@ class gnuradiozmq(gr.top_block, Qt.QWidget):
 
 def main(top_block_cls=gnuradiozmq, options=None):
 
+    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+        style = gr.prefs().get_string('qtgui', 'style', 'raster')
+        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()

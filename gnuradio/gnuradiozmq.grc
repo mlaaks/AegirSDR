@@ -45,6 +45,24 @@ blocks:
     coordinate: [200, 12]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /home/mikko/AegirSDR/gnuradio/iq.bin
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [856, 576.0]
+    rotation: 0
+    state: true
 - name: blocks_vector_to_streams_0
   id: blocks_vector_to_streams
   parameters:
@@ -121,7 +139,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 20.0]
+    coordinate: [848, 56.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0
@@ -182,7 +200,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 108.0]
+    coordinate: [848, 160.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0
@@ -243,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 196.0]
+    coordinate: [840, 256.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0_0
@@ -304,7 +322,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 284.0]
+    coordinate: [848, 360.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0_0_0
@@ -365,13 +383,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 372.0]
+    coordinate: [856, 464.0]
     rotation: 0
     state: enabled
 - name: zeromq_sub_source_0
   id: zeromq_sub_source
   parameters:
-    address: '"tcp://192.168.1.21:5555"'
+    address: '"tcp://127.0.0.1:5555"'
     affinity: ''
     alias: ''
     bind: 'False'
@@ -395,6 +413,7 @@ blocks:
 connections:
 - [blocks_vector_to_streams_0, '0', qtgui_waterfall_sink_x_0, '0']
 - [blocks_vector_to_streams_0, '1', qtgui_waterfall_sink_x_0_0, '0']
+- [blocks_vector_to_streams_0, '2', blocks_file_sink_0, '0']
 - [blocks_vector_to_streams_0, '2', qtgui_waterfall_sink_x_0_0_0, '0']
 - [blocks_vector_to_streams_0, '3', qtgui_waterfall_sink_x_0_0_0_0, '0']
 - [blocks_vector_to_streams_0, '4', qtgui_waterfall_sink_x_0_0_0_0_0, '0']
@@ -402,4 +421,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.10.0
+  grc_version: 3.10.7.0
