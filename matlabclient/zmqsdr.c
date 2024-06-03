@@ -101,9 +101,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	uint32_t c=22;
 
 	args_t args;
-	//mexPrintf("parsing...");
 	parseargs(&args,nrhs,prhs);
-	//mexPrintf("found %c \n",args.op);
 
 	switch(args.op){
 		case 'i':

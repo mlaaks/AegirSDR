@@ -28,7 +28,7 @@ csdrdevice::csdrdevice(uint32_t blocksize_, uint32_t samplerate_, uint32_t fcent
 	lagrequested = true;
 	lagready =false;
 	synced  = false;
-	newdata = 0; //false;
+	newdata = 0;
 	streaming=false;
 	devname = "";
 
@@ -50,8 +50,7 @@ csdrdevice::~csdrdevice(){
 	if (thread.joinable()) thread.join();
 
 	volk_free(sfloat);
-	
-	//delete controller;
+	delete controller; //why was this commented out?
 }
 
 std::complex<float> csdrdevice::est_phasecorrect(const std::complex<float> *ref){
