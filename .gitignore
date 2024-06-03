@@ -1,0 +1,7 @@
+#ignore build
+build/
+*.mat
+*.out
+*.zip
+*.m~
+*.bin
