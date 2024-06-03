@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -21,6 +21,11 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace std;
 
+/*
+The class cconfigfile. Crude config parser to support rudimentary
+configuration files. Change implementation to some INI-parser
+which supports Linux .conf files, even python will do.
+*/
 
 struct sdrdefs {
 	uint32_t devindex;

@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsd.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <vector>
@@ -26,9 +26,16 @@ along with coherent-rtlsd.  If not, see <https://www.gnu.org/licenses/>.
 #include "cdsp.h"
 #include "crefnoise.h"
 
+
+/*
+ The ccoherent class. Computes cross-correlation for time synchronization. Uses
+ a queue system for limiting the number of simultaneous frequency domain cross-correlations
+ to support limited hardware platforms, e.g Raspberry Pi & derivatives. Also estimates
+ phasecorrection factors for each channel when reference noise is enabled.
+*/
+
 //using tmpcomplextype_ = std::complex<float>; //this can be done, but is it worth it?
 //using fftff_complex = tmpcomplextype_;
-
 
 class ccoherent{
 private:

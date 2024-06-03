@@ -26,6 +26,12 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <complex>
 #include <utility>
 
+/*
+    TODO: Rename class from 'cpacketize' to 'ctransport'. When time allows, inherit
+    from 'ctransport' and offer e.g. SoapySDR library support
+*/
+
+//move this inside class:
 struct hdr0{
 	uint32_t globalseqn;
 	uint32_t N;
@@ -34,6 +40,12 @@ struct hdr0{
 };
 
 
+/*
+The packetizer singleton class. There is only one instance, it handles the ZMQ
+sockets for IQ sampledata transport. One such ZMQ message contains blocksize/2
+samples in column-major memory layout. The reference noise channel is always
+column 0, and there are nchannels rows in the sample matrix.
+*/
 class cpacketize{
 
 protected:
@@ -71,8 +83,8 @@ protected:
 	cpacketize();
 	~cpacketize();
 
-	int convert_to_rowmajor(uint32_t loc);
-	int convert_to_network_byte_order(uint32_t loc);
+	int convert_to_rowmajor(uint32_t loc); //slow, needs to touch every value in matrix, complexity O(rows*colums)
+	int convert_to_network_byte_order(uint32_t loc); //quick test, remove?
 public:
 
 	cpacketize (cpacketize &a) = delete;

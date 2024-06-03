@@ -1,7 +1,5 @@
 project (AegirSDR)
 
-#include_directories(${PROJECT_SOURCE_DIR}/include)
-
 set(SOURCES main.cc csdrdevice.cc crtlsdr.cc console.cc ccoherent.cc cdsp.cc ccontrol.cc cpacketizer.cc common.cc)
 
 set(GPUFFT_DIR /opt/vc/src/hello_pi/hello_fft)

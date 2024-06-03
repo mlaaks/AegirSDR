@@ -1,6 +1,5 @@
 /*
-coherent-rtlsdr
-
+AegirSDR
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "ccoherent.h"
@@ -200,7 +199,7 @@ void ccoherent::computelag()
 				cout << "frac zeroed at 1" <<endl;
 			}
 			
-			lag = idx + D; //disabled fractional sync, obviously it's not doing what it's supposed to do.
+			lag = idx + D;
 			}
 		else{
 			lag = idx;

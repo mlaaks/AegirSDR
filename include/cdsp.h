@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef CDSPH
@@ -21,6 +21,11 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <volk/volk.h>
 #include <volk/constants.h>
 //#include <arm_neon.h> //Raspberry Pi
+
+/*
+The cdsp class: currently maps to VOLK kernels, thanks GNU Radio. In 
+the future, implementations can be changed if need be.
+*/
 
 #ifdef RASPBERRYPI
 extern "C"{

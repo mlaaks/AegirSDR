@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef CREFNOISEH
@@ -21,6 +21,17 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <csdrdevice.h>
+
+/*
+    TODO: Edit the code to crefnoise.cc file from header file
+*/
+
+/*
+The crefnoise class: controls the noise source. In my original 
+implementation, this was done using a microcontroller GPIO driving
+a high-side power switch. In KrakenSDR, they use rtl-sdr GPIOs.
+*/
+
 
 class crefnoise{
 private:

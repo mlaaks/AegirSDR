@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef COMMONH
@@ -27,7 +27,10 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstring> //std::memset
 #include <queue>
 
-//#define USELIBRTLSDRBUFS
+//#define USELIBRTLSDRBUFS //Move this to CMake, D_USE_LIBRTLBUFS
+/*
+    TODO: Edit the code to common.cc files from header files
+*/
 
 const float sync_threshold=0.01; //EDITED for Kraken. Fix this to read the value from .conf file
 

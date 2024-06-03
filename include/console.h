@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -34,6 +34,10 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "crefnoise.h"
 
+/*
+The cconsole class. Quick and dirty local (& remote via ZMQ control socket) way
+to control the receiver. To be removed and replaced in the future...
+*/
 
 using namespace std;
 
@@ -88,16 +92,10 @@ private:
 	std::vector<phistory_t> phistory;
 
 	crefnoise *refnoise;
-
-	//zmq::context_t 		context;
-	//zmq::socket_t  		socket;
-
 public:
-	//std::vector<csdrdevice*> *devices; //CHANGED
 	lvector<csdrdevice*> *devices;
 
 	std::atomic<bool> do_exit;
-	//cconsole(int p[2],csdrdevice *refdev_, std::vector<csdrdevice*> *devvec_); // CHANGED
 	cconsole(int p[2],crefsdr *refdev_, lvector<csdrdevice*> *devvec_,crefnoise * refnoise_);
 	~cconsole();
 	void start();

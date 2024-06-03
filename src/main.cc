@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
@@ -101,8 +101,8 @@ void usage(void)
 		"\t[-C 'config file', read receiver config from a file]\n"
 		"\t[-q quiet mode, redirect stderr from rtl-sdr\n"
 		"\t[-R outputmode raw: [no packet header.]\n"
-		"\t[-w wireformat: 8 or 32 [int8 (default) or complex float 32]\n"
-		"\t[-m memorylayout: row-major [default: column-major]\n"
+		"\t[-w wireformat: 8 or 32 [int8 (default) or complex<float> (32 bit)]\n"
+		"\t[-m memorylayout (for transport): row-major [default: column-major]\n"
 		"\t[-K KrakenSDR device support (experimental)\n"
 		"\t[-B KrakenSDR enable bias tees\n");
 	exit(1);
@@ -249,7 +249,6 @@ int main(int argc, char **argv)
 		cpacketize *transport=cpacketize::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
 
 		crefsdr* ref_dev = new crefsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
-		cout << "opening reference device" <<endl;
 
 		if (ref_dev->open(ops.refname)){
 			cout << "could not open reference device, serial number:'" << ops.refname << "'" << endl;

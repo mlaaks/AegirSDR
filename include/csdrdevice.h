@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef CSDRDEVICEH
@@ -34,6 +34,10 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include "cdsp.h"
 #include "cpacketizer.h"
 
+/*
+    TODO: Edit the code to crtlsdr.cc & crefdev.cc files from header files
+*/
+
 
 //forward declaration, these classes have a circular dependency
 class csdrdevice;
@@ -52,6 +56,12 @@ struct lagpoint{
         PAPR=0;
 	}
 };
+
+
+/*
+The virtual csdrdevice base class. Could theoretically add support for
+other noise source calibrated coherent SDRs in the future.
+*/
 
 class csdrdevice{
 	uint32_t					readcnt;
@@ -192,6 +202,9 @@ public:
 	virtual ~csdrdevice();
 };
 
+/*
+The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functions.
+*/
 
 class crtlsdr: public csdrdevice{
 	uint32_t	 	devnum;
@@ -257,9 +270,16 @@ public:
 	};
 };
 
+
+/*
+The crefsdr class. In this implementation, the reference channel is a special case, which in 
+the original coherent-rtlsdr was not use for signals. I.e., it only captured the common refecence noise
+*/
+
 class crefsdr: public crtlsdr{
-	//needed for overloading in case of reference channel. this just places the data in the second half of the buffer.
-	
+	/*needed for overloading in case of reference channel. this just places the data in the second half of the buffer.
+	  This is a trick for frequency domain (circular) cross-correlation, which saves some CPU cycles.
+	*/
 public:
 	const std::complex<float> *convtofloat();
 	const std::complex<float> *convtofloat(const std::complex<float>*);

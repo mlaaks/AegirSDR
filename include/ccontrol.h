@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 #ifndef CCONTROLH
 #define CCONTROLH
@@ -20,6 +20,10 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <atomic>
 #include <thread>
 #include "csdrdevice.h"
+
+/* The ccontrol class: Handles timesynchronization using RTL-SDR hardware resampler.
+   Synchronizes to fractional sample delays.
+*/
 
 //forward declaration, these classes have a circular dependency
 class ccontrol;
