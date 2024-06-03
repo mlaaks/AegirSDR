@@ -167,6 +167,9 @@ int crtlsdr::set_correction_f(float f){
 
 
 int8_t* crtlsdr::swapbuffer(uint8_t *b){
+
+	//do we need buffer timestamps like USRP/UHD devices do?
+
 	//auto t = std::chrono::high_resolution_clock::now();
 	//auto t_ns= (std::chrono::time_point_cast<std::chrono::nanoseconds>(t)).time_since_epoch();
 
@@ -220,12 +223,12 @@ void crefsdr::set_reference_noise_state(bool state){
 
 	//debug
 	std::cout << "Noise source state " << std::to_string(state) << std::endl;
-	rtlsdr_set_bias_tee_gpio(dev, 0, state ? 1 : 0);
+	rtlsdr_set_bias_tee_gpio(dev, 0, state ? 1 : 0); //KrakenSDR bias_tee GPIO on device 0, GPIO0 controls the noise source
 }
 
 void crefsdr::set_bias_tee_state(uint32_t channel,bool state){
 	int ret;
-	ret = rtlsdr_set_bias_tee_gpio(dev, channel+1, state ? 1 : 0);
+	ret = rtlsdr_set_bias_tee_gpio(dev, channel+1, state ? 1 : 0); //KrakenSDR GPIO:s on device 0, GPIO1-GPIO5 control the channel bias tees
 	if (ret){
 		cout << "Failed to set bias tee on channel " << to_string(channel) << endl; 
 	}
