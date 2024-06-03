@@ -26,8 +26,6 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <complex>
 #include <utility>
 
-//byte-size buffers are static, thus, when the first object of class packetize is created
-
 struct hdr0{
 	uint32_t globalseqn;
 	uint32_t N;
