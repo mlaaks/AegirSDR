@@ -79,8 +79,9 @@ struct cl_ops{
 	bool	 	 use_cfg;
 	bool	 	 quiet;
 	bool		 rowmajor;		  // mostly for GNU Radio ZMQ source.
-	bool		 use32bitfloat; // e.g. gr_complex, std::complex<float> interleaved
+	bool		 use32bitfloat; // e.g. gr_complex, std::complex<float>, interleaved 32bit float
 	bool		 krakensdr;
+	bool		 krakenbiastee;
 };
 
 void usage(void)
@@ -101,15 +102,16 @@ void usage(void)
 		"\t[-C 'config file', read receiver config from a file]\n"
 		"\t[-q quiet mode, redirect stderr from rtl-sdr\n"
 		"\t[-R outputmode raw: [no packet header.]\n"
-		"\t[-w wireformat: 8 or 32 [i8 (default) or f32]\n"
+		"\t[-w wireformat: 8 or 32 [int8 (default) or complex float 32]\n"
 		"\t[-m memorylayout: row-major [default: column-major]\n"
-		"\t[-K KrakenSDR device support (experimental)\n");
+		"\t[-K KrakenSDR device support (experimental)\n"
+		"\t[-B KrakenSDR enable bias tees\n");
 	exit(1);
 }
 
 int parsecommandline(cl_ops *ops, int argc, char **argv){
 	int opt;
-	while ((opt = getopt(argc, argv, "s:b:f:h:n:g:r:I:C:w:mARqK")) != -1) {
+	while ((opt = getopt(argc, argv, "s:b:f:h:n:g:r:I:C:w:mARqKB")) != -1) {
 		switch (opt) {
 			case 's':
 					ops->fs=(uint32_t)atof(optarg);
@@ -169,6 +171,9 @@ int parsecommandline(cl_ops *ops, int argc, char **argv){
 			case 'K':
 					ops->krakensdr=true;
 				break;
+			case 'B':
+					ops->krakenbiastee=true;
+				break;
 			default:
 					usage();
 				break;
@@ -183,7 +188,7 @@ int main(int argc, char **argv)
 	int nfft = 8;
 	crefnoise * refnoise;
 
-	cl_ops   ops = {"1000",false,2048000,uint32_t(1024e6),8,1<<14,4,500,500,false,"",false,false,false,false,false};
+	cl_ops   ops = {"1000",false,2048000,uint32_t(1024e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
 	ops.ndev = crtlsdr::get_device_count();
 	cout << to_string(ops.ndev) << " devices found." << endl;
 	parsecommandline(&ops,argc,argv);
@@ -247,17 +252,27 @@ int main(int argc, char **argv)
 		cout << "opening reference device" <<endl;
 
 		if (ref_dev->open(ops.refname)){
-			cout <<"could not open reference, serial number:'" << ops.refname <<"'"<<endl;
+			cout << "could not open reference device, serial number:'" << ops.refname << "'" << endl;
 			exit(1);
 		}
 
 		ref_dev->set_transport(transport);
-
-		ref_dev->set_bias_tee_state(0,true);
-		ref_dev->set_bias_tee_state(1,true);
-		ref_dev->set_bias_tee_state(2,true);
-		ref_dev->set_bias_tee_state(3,true);
-		ref_dev->set_bias_tee_state(4,true);
+		if (ops.krakenbiastee){
+			cout << "Enable KrakenSDR bias tees (all for now)" << endl;
+			ref_dev->set_bias_tee_state(0,true);
+			ref_dev->set_bias_tee_state(1,true);
+			ref_dev->set_bias_tee_state(2,true);
+			ref_dev->set_bias_tee_state(3,true);
+			ref_dev->set_bias_tee_state(4,true);
+		}
+		else{
+			cout << "Disable KrakenSDR bias tees (all for now)" << endl;
+			ref_dev->set_bias_tee_state(0,false);
+			ref_dev->set_bias_tee_state(1,false);
+			ref_dev->set_bias_tee_state(2,false);
+			ref_dev->set_bias_tee_state(3,false);
+			ref_dev->set_bias_tee_state(4,false);
+		}
 
 		if (ops.krakensdr){
 			refnoise = new crefnoise(ref_dev);

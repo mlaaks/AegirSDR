@@ -1,5 +1,5 @@
 /*
-coherent-rtlsdr
+AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
+along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef PACKETIZEH
@@ -63,11 +63,16 @@ protected:
 	
 
 	static size_t packetlength(uint32_t N,uint32_t L);
+
+	/* to be deleted //
 	void resize_buffers(uint32_t N, uint32_t L);
+	*/
 
 	cpacketize();
 	~cpacketize();
 
+	int convert_to_rowmajor(uint32_t loc);
+	int convert_to_network_byte_order(uint32_t loc);
 public:
 
 	cpacketize (cpacketize &a) = delete;

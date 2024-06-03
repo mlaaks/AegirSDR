@@ -26,8 +26,8 @@ along with coherent-rtlsd.  If not, see <https://www.gnu.org/licenses/>.
 #include "cdsp.h"
 #include "crefnoise.h"
 
-using tmpcomplextype_ = std::complex<float>; //this can be done, but is it worth it?
-using fftff_complex = tmpcomplextype_;
+//using tmpcomplextype_ = std::complex<float>; //this can be done, but is it worth it?
+//using fftff_complex = tmpcomplextype_;
 
 
 class ccoherent{
@@ -48,7 +48,9 @@ private:
 	int 						nfft;
 	int 						blocksize;
 
+#ifdef RASPBERRYPI
 	int							mb; // RASPBERRYPI MAILBOX for gpu.
+#endif
 
 	std::vector<csdrdevice*>	lagqueue;
 	crefnoise 					*refnoise;

@@ -18,6 +18,7 @@ along with coherent-rtlsdr.  If not, see <https://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <memory>
 #include <iostream>
+#include <arpa/inet.h>
 #include "cpacketizer.h"
 #include "cdsp.h"
 
@@ -121,27 +122,6 @@ size_t cpacketize::packetlength(uint32_t N,uint32_t L){
 	}
 }
 
-void cpacketize::resize_buffers(uint32_t N, uint32_t L){
-	size_t plen = packetlength(N,L);
-
-	std::cout << "in resize buffers, reserved buffers of " << std::to_string(plen) << std::endl;
-	std::cout << "N: " << std::to_string(N) << "L: " << std::to_string(L) << std::endl;
-	{//lock, switch pointers, delete, release lock
-		std::lock_guard<std::mutex> lock(bmutex);
-
-		if(f32bit){
-			packetbuf_f32_0 = std::make_unique<std::complex<float>[]>(plen);
-			packetbuf_f32_1 = std::make_unique<std::complex<float>[]>(plen);
-		}
-		else{
-			packetbuf0 = std::make_unique<int8_t[]>(plen);
-			packetbuf1 = std::make_unique<int8_t[]>(plen);
-		}
-
-		pcorrection.resize(N,std::complex<float>(0.0f,0.0f));
-	}
-}
-
 int cpacketize::send(){
 	if (!noheader){
 		//fill static header. block readcounts filled by calls to write:
@@ -175,25 +155,37 @@ int cpacketize::writedebug(uint32_t channeln,std::complex<float> p){
     return 0;
 }
 
-//the idea is that each thread could call this method from it's own context, as we're writing to separate locations
-/*
-int cpacketize::write(uint32_t channeln,uint32_t readcnt,int8_t *rp){
-    uint32_t loc;
+int cpacketize::convert_to_rowmajor(uint32_t loc){
+	std::complex<float> *p = packetbuf_f32_0.get();
+	std::complex<int8_t> *p8bit = (std::complex<int8_t> *) packetbuf0.get();
 
-    if (!noheader){
-        //fill dynamic size part of header, write readcounts
-        *(((uint32_t *)packetbuf0.get()) + sizeof(hdr0)/sizeof(uint32_t)+channeln)=readcnt;
-        loc = (sizeof(hdr0)+objcount*sizeof(uint32_t)) + channeln*blocksize;
-    }
-    else{
-        loc = channeln*blocksize;
-    }
+	if(f32bit){
+		for (int r=0;r<nchannels;r++){
+			for (int c=0;c<(blocksize>>1);c++){
+				*(p + loc + r*(blocksize>>1)+c) = p[c*nchannels+r];				
+			}
+		}
+	}
+	else{
+		for (int r=0;r<nchannels;r++){
+			for (int c=0;c<(blocksize>>1);c++){
+				*(p8bit + loc + r*(blocksize>>1)) = p8bit[c*nchannels+r];
+			}
+		}
+	}
 
-    //copy data
-    std::memcpy((int8_t *) (packetbuf0.get() +loc),rp,blocksize);
+	return 0;
+}
 
-    return 0;
-}*/
+int cpacketize::convert_to_network_byte_order(uint32_t loc){
+	if (f32bit){
+		std::complex<float> *p = packetbuf_f32_0.get()+loc;
+		for(uint64_t i=0;i<(blocksize>>1);i++){
+			p[i] = htonl(*((uint32_t *) p));
+		}
+	}
+	return 0;
+}
 
 int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<float> *in){
     uint32_t loc;
@@ -215,6 +207,9 @@ int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<floa
 
     if(f32bit){
     	std::memcpy((std::complex<float> *) packetbuf_f32_0.get()+loc,in,(blocksize>>1)*sizeof(std::complex<float>));
+    	if(rowmajor){
+    		convert_to_rowmajor(loc);
+    	}
     }
     else{
     	cdsp::convto8bit((std::complex<int8_t> *) (packetbuf0.get()+loc),in, (blocksize>>1));
