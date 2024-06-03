@@ -60,13 +60,13 @@ class gnuradiozmq(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 32000
+        self.samp_rate = samp_rate = 2e6
 
         ##################################################
         # Blocks
         ##################################################
 
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 5, "tcp://127.0.0.1:5555", 100, False, (-1), '', False)
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 5, "tcp://192.168.1.21:5555", 100, False, (-1), '', False)
         self.qtgui_waterfall_sink_x_0_0_0_0_0 = qtgui.waterfall_sink_c(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype

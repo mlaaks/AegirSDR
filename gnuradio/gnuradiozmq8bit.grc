@@ -45,22 +45,108 @@ blocks:
     coordinate: [200, 12]
     rotation: 0
     state: enabled
-- name: blocks_vector_to_streams_0
-  id: blocks_vector_to_streams
+- name: blocks_interleaved_char_to_complex_0
+  id: blocks_interleaved_char_to_complex
   parameters:
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_streams: '5'
-    type: complex
-    vlen: '1'
+    scale_factor: '127'
+    vector_input: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 208.0]
+    coordinate: [912, 84.0]
+    rotation: 0
+    state: enabled
+- name: blocks_interleaved_char_to_complex_0_0
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '127'
+    vector_input: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 164.0]
+    rotation: 0
+    state: enabled
+- name: blocks_interleaved_char_to_complex_0_0_0
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '127'
+    vector_input: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 252.0]
+    rotation: 0
+    state: enabled
+- name: blocks_interleaved_char_to_complex_0_0_0_0
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '127'
+    vector_input: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 340.0]
+    rotation: 0
+    state: enabled
+- name: blocks_interleaved_char_to_complex_0_0_0_0_0
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '127'
+    vector_input: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 428.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_demux_0
+  id: blocks_stream_demux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    lengths: (2, 2,2,2,2)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_outputs: '5'
+    type: byte
+    vlen: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 208.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0
@@ -121,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 20.0]
+    coordinate: [1104, 76.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0
@@ -182,7 +268,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 108.0]
+    coordinate: [1104, 156.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0
@@ -243,7 +329,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 196.0]
+    coordinate: [1104, 244.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0_0
@@ -304,7 +390,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 284.0]
+    coordinate: [1104, 332.0]
     rotation: 0
     state: enabled
 - name: qtgui_waterfall_sink_x_0_0_0_0_0
@@ -365,13 +451,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 372.0]
+    coordinate: [1104, 420.0]
     rotation: 0
     state: enabled
 - name: zeromq_sub_source_0
   id: zeromq_sub_source
   parameters:
-    address: '"tcp://192.168.1.21:5555"'
+    address: '"tcp://127.0.0.1:5555"'
     affinity: ''
     alias: ''
     bind: 'False'
@@ -382,23 +468,30 @@ blocks:
     minoutbuf: '0'
     pass_tags: 'False'
     timeout: '100'
-    type: complex
-    vlen: '5'
+    type: byte
+    vlen: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 220.0]
+    coordinate: [32, 236.0]
     rotation: 0
     state: enabled
 
 connections:
-- [blocks_vector_to_streams_0, '0', qtgui_waterfall_sink_x_0, '0']
-- [blocks_vector_to_streams_0, '1', qtgui_waterfall_sink_x_0_0, '0']
-- [blocks_vector_to_streams_0, '2', qtgui_waterfall_sink_x_0_0_0, '0']
-- [blocks_vector_to_streams_0, '3', qtgui_waterfall_sink_x_0_0_0_0, '0']
-- [blocks_vector_to_streams_0, '4', qtgui_waterfall_sink_x_0_0_0_0_0, '0']
-- [zeromq_sub_source_0, '0', blocks_vector_to_streams_0, '0']
+- [blocks_interleaved_char_to_complex_0, '0', qtgui_waterfall_sink_x_0, '0']
+- [blocks_interleaved_char_to_complex_0_0, '0', qtgui_waterfall_sink_x_0_0, '0']
+- [blocks_interleaved_char_to_complex_0_0_0, '0', qtgui_waterfall_sink_x_0_0_0, '0']
+- [blocks_interleaved_char_to_complex_0_0_0_0, '0', qtgui_waterfall_sink_x_0_0_0_0,
+  '0']
+- [blocks_interleaved_char_to_complex_0_0_0_0_0, '0', qtgui_waterfall_sink_x_0_0_0_0_0,
+  '0']
+- [blocks_stream_demux_0, '0', blocks_interleaved_char_to_complex_0, '0']
+- [blocks_stream_demux_0, '1', blocks_interleaved_char_to_complex_0_0, '0']
+- [blocks_stream_demux_0, '2', blocks_interleaved_char_to_complex_0_0_0, '0']
+- [blocks_stream_demux_0, '3', blocks_interleaved_char_to_complex_0_0_0_0, '0']
+- [blocks_stream_demux_0, '4', blocks_interleaved_char_to_complex_0_0_0_0_0, '0']
+- [zeromq_sub_source_0, '0', blocks_stream_demux_0, '0']
 
 metadata:
   file_format: 1
