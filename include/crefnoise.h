@@ -52,7 +52,7 @@ public:
 			fp.flush(); //may not send single char immediately unless we flush buffers
 		}
 		else{
-			cout<<"Trying to enable reference noise " << ref_dev << endl;
+			//cout<<"Trying to enable reference noise " << ref_dev << endl;
 			ref_dev->set_reference_noise_state(s);
 		}
 	};

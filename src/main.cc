@@ -184,7 +184,7 @@ int parsecommandline(cl_ops *ops, int argc, char **argv){
 int main(int argc, char **argv)
 {
 
-	int nfft = 8;
+	int nfft = 8; //rename for clarity. this is the maximum number of simultaneous 'fft-tickets' lag queue hands out
 	crefnoise * refnoise;
 
 	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
@@ -309,6 +309,12 @@ int main(int argc, char **argv)
 
 		ccoherent coherent(ref_dev,&v_devices, refnoise, nfft);
 		coherent.start();
+
+		/*
+		cout <<"Tuner gains : " << to_string(ref_dev->get_tuner_gain()) << endl;
+		for(auto d : v_devices){
+			cout << to_string(d->get_tuner_gain()) << endl;
+		}*/
 				
 		while(!exit_all){
 			transport->send(); //main thread just waits on data and publishes when available.

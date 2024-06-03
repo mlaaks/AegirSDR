@@ -213,7 +213,7 @@ int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<floa
     	}
     }
     else{
-    	cdsp::convto8bit((std::complex<int8_t> *) (packetbuf0.get()+loc),in, (blocksize>>1));
+    	cdsp::convto8bit((std::complex<int8_t> *) (packetbuf0.get()+loc),in,blocksize); //verify blocksize issue, define nsamples or sth.
     }
     return 0;
 }

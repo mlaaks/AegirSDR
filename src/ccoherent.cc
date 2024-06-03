@@ -59,9 +59,6 @@ ccoherent::ccoherent(crefsdr* refdev_,lvector<csdrdevice*> *devvec_,crefnoise* r
 	
 #else
 
-	//debug
-	cout << "Trying to allocate buffers for fft & volk" << endl;
-
 	//alloc buffers for dsp. note, fftwf_complex is bin. compat with lv_32fc_t and std::complex<float>.
 	sfft  = (std::complex<float> *) fftwf_alloc_complex(bufferlen);
 	sifft = (std::complex<float> *) fftwf_alloc_complex(bufferlen);
@@ -92,8 +89,6 @@ ccoherent::ccoherent(crefsdr* refdev_,lvector<csdrdevice*> *devvec_,crefnoise* r
 								  inembed,istride,idist,(fftwf_complex *) sifft,
 								  onembed,ostride,odist,FFTW_BACKWARD,0);
 
-	//debug
-	cout << "Buffers successfully allocated" << endl;
 #endif
 }
 
@@ -127,9 +122,9 @@ void ccoherent::queuelag(csdrdevice *d){
 	if (lagqueue.size()<nfft){
 #ifdef RASPBERRYPI
 		std::complex<float> *inptr = (std::complex<float> *) (fftscheme->in + lagqueue.size()*fftscheme->step);
-		std::memcpy(inptr,d->get_sptr(),sizeof(std::complex<float>)*(blocksize));
+		std::memcpy(inptr,d->get_samplepointer(),sizeof(std::complex<float>)*(blocksize));
 #else
-		std::memcpy((sfloat+lagqueue.size()*blocksize), d->get_sptr(),sizeof(std::complex<float>)*(blocksize)); //fix me, half of the copy is zeros.
+		std::memcpy((sfloat+lagqueue.size()*blocksize), d->get_samplepointer(),sizeof(std::complex<float>)*(blocksize)); //fix me, half of the copy is zeros.
 #endif
 		lagqueue.push_back(d);
 	}
@@ -247,12 +242,11 @@ void ccoherent::threadf(ccoherent *ctx){
 				}
 
 				if (ctx->refnoise->isenabled()){
-					std::complex<float> p = d->est_phasecorrect(ctx->refdev->get_sptr()+(ctx->refdev->get_blocksize()>>1));
+					std::complex<float> p = d->est_phasecorrect(ctx->refdev->get_samplepointer()+(ctx->refdev->get_blocksize()>>1));
 				}
 				
 				d->phasecorrect();
-				//d->packetize->write(c,d->get_readcntbuf(),sfloat);
-				d->packetize->write(c,d->get_readcntbuf(),d->get_sptr());
+				d->packetize->write(c,d->get_readcntbuf(),d->get_samplepointer());
 				d->packetize->writedebug(c,d->get_phasecorrect());
 				c++;
 				d->consume();

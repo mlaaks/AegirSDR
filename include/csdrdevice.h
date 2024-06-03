@@ -110,7 +110,12 @@ public:
 	virtual int set_samplerate(uint32_t fs) = 0;
 
 	virtual int set_agcmode(bool flag)=0;
-	virtual int set_tunergain(uint32_t gain)=0;
+	virtual int set_tuner_gain(int gain)=0;
+	virtual uint32_t get_tuner_gain()=0;
+
+	virtual int set_if_gain(uint32_t gain)=0;
+	virtual uint32_t get_if_gain()=0;
+
 	virtual int set_tunergainmode(uint32_t mode)=0;
 	virtual int set_correction_f(float f)=0;
 
@@ -162,9 +167,11 @@ public:
 		return lagrequested;
 	}
 
-	const std::complex<float>* get_sptr(){return sfloat;};
+	const std::complex<float>* get_samplepointer(){return sfloat;};
 
 	void request_exit(){do_exit=true;};
+
+	inline bool exit_requested(){return do_exit;};
 	
 	const lagpoint* const get_lagp(){return &lagp;};
 	float 	 get_samplerate(){return samplerate;};
@@ -238,7 +245,12 @@ public:
 	int set_samplerate(uint32_t fs);
 
 	int set_agcmode(bool flag);
-	int set_tunergain(uint32_t gain);
+	int set_tuner_gain(int gain);
+	uint32_t get_tuner_gain();
+
+	int set_if_gain(uint32_t gain);
+	uint32_t get_if_gain();
+
 	int set_tunergainmode(uint32_t mode);
 	int set_correction_f(float f);
 
@@ -283,7 +295,7 @@ class crefsdr: public crtlsdr{
 public:
 	const std::complex<float> *convtofloat();
 	const std::complex<float> *convtofloat(const std::complex<float>*);
-	const std::complex<float>* get_sptr();
+	//const std::complex<float>* get_sptr(); //not needed
 
 	void start(barrier *b);
 	void set_reference_noise_state(bool state);

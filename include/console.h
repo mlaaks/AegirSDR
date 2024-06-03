@@ -53,7 +53,8 @@ enum command_code{
 	quit,
 	fcenter,
 	request,
-	phase
+	phase,
+	tunergain
 };
 
 //static std::map<std::string, command_code> command_codes;
@@ -70,14 +71,13 @@ const static std::unordered_map<std::string,int> command_codes{
 	{"quit",quit},
 	{"fcenter",fcenter},
 	{"request",request},
-	{"phase",phase}
+	{"phase",phase},
+	{"tunergain",tunergain}
 };
 
 struct phistory_t{
 	std::chrono::high_resolution_clock::time_point t;
 	std::complex<float> p;
-	//auto t = std::chrono::high_resolution_clock::now();
-	//auto t_ns= (std::chrono::time_point_cast<std::chrono::nanoseconds>(t)).time_since_epoch();
 };
 
 
@@ -114,4 +114,5 @@ public:
 	int cmdfs(std::string);
 	int cmdphase(std::string);
 	int cmdstatus(std::string);
+	int cmdtunergain(std::string);
 };

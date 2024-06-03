@@ -31,7 +31,6 @@ void crtlsdr::startcontrol(){
 }
 
 void crtlsdr::stop(){
-	rtlsdr_cancel_async(dev);
 	streaming = false;
 	cv.notify_all();
 	controller->request_exit();
@@ -58,10 +57,23 @@ void crtlsdr::asynch_threadf(crtlsdr *d){
 	}
 }
 
+/*
+ * From rtl-sdr.h in https://github.com/krakenrf/librtlsdr
+ * Due to incomplete concurrency implementation, cancel_async should
+ * only be called from within the callback function, so it is
+ * in the correct thread.*/
+
 void crtlsdr::asynch_callback(unsigned char *buf, uint32_t len, void *ctx)
 {
+	crtlsdr *d = (crtlsdr *)ctx;
+	
 	if (ctx) {
-		((csdrdevice *)ctx) -> swapbuffer(buf);
+		
+		if (d->exit_requested()){
+			rtlsdr_cancel_async(d->dev);
+		}
+
+		d -> swapbuffer(buf);
 	}
 }
 
@@ -123,7 +135,7 @@ int crtlsdr::open(uint32_t index){
 	if (ret!=0) return ret;
 	ret = set_tunergainmode(1);
 	if (ret!=0) return ret;
-	ret = set_tunergain(rfgain);
+	ret = set_tuner_gain(rfgain);
 	if (ret!=0) return ret;
 	ret = set_correction_f(0.0f);  //this must be zeroed. value is retained after close.
 
@@ -152,9 +164,22 @@ int crtlsdr::set_agcmode(bool flag){
 	return rtlsdr_set_agc_mode(dev, agc);
 }
 
-int crtlsdr::set_tunergain(uint32_t gain){
+int crtlsdr::set_tuner_gain(int gain){
 	rfgain = gain;
+	//cout << "Trying to set tuner gain " << to_string(devnum) << endl;
 	return rtlsdr_set_tuner_gain(dev, gain);
+}
+
+uint32_t crtlsdr::get_tuner_gain(){
+	return rtlsdr_get_tuner_gain(dev);
+}
+
+uint32_t crtlsdr::get_if_gain(){
+	return 0; //no such function in rtl_sdr.h 
+}
+
+int crtlsdr::set_if_gain(uint32_t gain){
+	return 0; //this exists. not implemented yet.
 }
 
 int crtlsdr::set_tunergainmode(uint32_t mode){
@@ -232,8 +257,4 @@ void crefsdr::set_bias_tee_state(uint32_t channel,bool state){
 	if (ret){
 		cout << "Failed to set bias tee on channel " << to_string(channel) << endl; 
 	}
-}
-
-const std::complex<float>* crefsdr::get_sptr(){
-	return sfloat;
 }

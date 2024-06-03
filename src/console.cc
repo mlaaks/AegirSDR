@@ -218,6 +218,8 @@ int cconsole::cmdlist(std::string opt){
 	return 0;				
 }
 
+
+//Flagged for deletion. No need to add or delete devices at runtime
 int cconsole::cmddel(std::string opt){
 	for(lvector<csdrdevice*>::iterator d = devices->begin(); d != devices->end(); ++d){
 		if (opt.compare((*d)->get_devname()) == 0){
@@ -241,6 +243,7 @@ int cconsole::cmddel(std::string opt){
 	return -1;
 }
 
+//Flagged for deletion. No need to add or delete devices at runtime
 int cconsole::cmdadd(std::string opt){
 
 	for (auto *d : *devices)
@@ -267,12 +270,12 @@ int cconsole::cmdadd(std::string opt){
 int cconsole::cmdrequest(std::string opt){
 
 	if (opt.compare("re")==0){
-		cout << "enable refnoise"<<endl;
+		cout << "enable reference noise"<<endl;
 		refnoise->set_state(true);
 	}
 	else if (opt.compare("rd")==0){
 		refnoise->set_state(false);
-		cout << "disable refnoise"<<endl;
+		cout << "disable reference noise"<<endl;
 	}
 	else if (opt.compare("lag")==0){
 		for (auto *d : *devices)
@@ -283,6 +286,18 @@ int cconsole::cmdrequest(std::string opt){
 			d->set_synchronized(false);
 		}
 	}
+	else if (opt.compare("biasteeon")==0){
+		cout << "setting bias tee on, all channels" << endl;
+		for(uint32_t channel=0;channel<5;channel++){
+			refdev->set_bias_tee_state(channel,true);
+		}
+	}
+	else if (opt.compare("biasteeoff")==0){
+		cout << "setting bias tee off, all channels" << endl;
+		for(uint32_t channel=0;channel<5;channel++){
+			refdev->set_bias_tee_state(channel,false);
+		}
+	}
 	
 	return 0;
 }
@@ -290,7 +305,7 @@ int cconsole::cmdrequest(std::string opt){
 int cconsole::cmdphase(std::string opt){
 	for(auto *d : *devices){
 		d->convtofloat();
-		std::complex<float> p = d->est_phasecorrect(refdev->get_sptr()+(refdev->get_blocksize()>>1));
+		std::complex<float> p = d->est_phasecorrect(refdev->get_samplepointer()+(refdev->get_blocksize()>>1));
 		cout<< to_string(int(180.0f/M_PI*atan2f(p.imag(),p.real()))) << "\t";
 		//cout<< to_string(atan2f(p.imag(),p.real())) << "\t";
 
@@ -298,8 +313,6 @@ int cconsole::cmdphase(std::string opt){
 		ph.t = std::chrono::high_resolution_clock::now();
 		ph.p = p;
 		phistory.push_back(ph);
-
-
 	}
 	cout << endl;
     return 0;
@@ -326,6 +339,25 @@ int cconsole::cmdstatus(std::string opt){
     return 0;
 }
 
+int cconsole::cmdtunergain(std::string opt){
+	
+	try{
+		float gain = stof(opt);
+		int tunergain = int(gain)*10; //specified in tenths of db in RTLSDR_API
+
+		cout << "Setting tuner gains to " << to_string(tunergain) << endl;
+
+		for (auto *d : *devices){
+			d->set_tuner_gain(tunergain);
+		}
+		refdev->set_tuner_gain(tunergain);
+	}
+	catch (const std::invalid_argument& ia){
+			cout << "invalid argument: " << ia.what() <<"("<< opt <<")"<< endl;
+	}
+	return 0;
+}
+
 int cconsole::parsecmd(std::string inputln){
 	int cmd;
 	size_t wspace = inputln.find(" ");
@@ -334,15 +366,11 @@ int cconsole::parsecmd(std::string inputln){
 		} catch (const std::out_of_range& err){
 			cmd = nop;
 		}
-
-	//cout << "got cmd: "<<to_string(cmd); //REMOVE
 	return cmd;
 }
 
 std::string cconsole::getoptionstr(std::string inputln){
 	size_t wspace = inputln.find(" ");
-
-	//cout << "got options: "<<inputln.substr(wspace+1,inputln.npos); //REMOVE
 	return inputln.substr(wspace+1,inputln.npos);
 }
 
@@ -381,25 +409,13 @@ void cconsole::consolethreadf(cconsole *ctx)
 			break;
 			case status:
 				ctx->cmdstatus(options);
-			/*{
-				int numsynch=0;
-				for (auto *d : *ctx->devices){
-					if(d->get_synchronized()) numsynch++;
-				}
-				cout << to_string(numsynch) <<" / " << to_string(ctx->devices->size()) << " synchronized" << endl;
-				for (lvector<csdrdevice*>::iterator it = ctx->devices->begin(); it != ctx->devices->end(); ++it)
-				{
-					cout<< to_string((*it)->get_lagp()->lag)<< "\t";
-				}
-				cout << endl;
-			}*/
 			break;
 			case list:
 				ctx->cmdlist(options);
 			break;
 			case logs:
 				{
-				if (read(ctx->stderr_pipe[0], buf, sizeof(buf))>0) //this works!
+				if (read(ctx->stderr_pipe[0], buf, sizeof(buf))>0)
 					cout << std::string(buf) << endl;
 				}
 			break;
@@ -413,6 +429,10 @@ void cconsole::consolethreadf(cconsole *ctx)
 			break;
 			case phase:
 				ctx->cmdphase(options);
+			break;
+			case tunergain:
+				cout << "tunergain" << endl;
+				ctx->cmdtunergain(options);
 			break;
 			case quit:
 				ctx->request_exit();
