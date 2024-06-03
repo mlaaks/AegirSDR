@@ -251,7 +251,7 @@ public:
 
 	crtlsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : csdrdevice(blocksize_,samplerate_,fcenter_), s8bit(asyncbufn_,blocksize_){
 		asyncbufn = asyncbufn_;
-		rfgain    = 500; //?
+		rfgain    = 0;
 	};
 	~crtlsdr(){
 	};

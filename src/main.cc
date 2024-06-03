@@ -94,8 +94,7 @@ void usage(void)
 		"\t[-b blocksize [samples'(default 2^14=16384, use 2^n)]\n"
 		"\t[-s samplerate (default: 2048000 Hz)]\n"
 		"\t[-n number of devices to init\n"
-		"\t[-S use synchronous read (default: async) NOT FUNCTIONAL CURRENTLY]\n"
-		"\t[-g tuner gain: signal [dB] (default 60)]\n"
+		"\t[-g tuner gain: signal [dB] (default 50)]\n"
 		"\t[-r tuner gain: reference [dB] (default 50)]\n"
 		"\t[-I reference dongle serial ID (default '1000')]\n"
 		"\t[-A set automatic gaincontrol for all devices]\n"
@@ -188,14 +187,15 @@ int main(int argc, char **argv)
 	int nfft = 8;
 	crefnoise * refnoise;
 
-	cl_ops   ops = {"1000",false,2048000,uint32_t(1024e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
+	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
 	ops.ndev = crtlsdr::get_device_count();
 	cout << to_string(ops.ndev) << " devices found." << endl;
 	parsecommandline(&ops,argc,argv);
 
 	cout << "ops parsed\n"<< endl;
-	if (ops.no_header)
+	if (ops.no_header){
 		cout << "streaming in raw mode" << endl;
+	}
 	if (ops.krakensdr){
 		ops.refname="1000";
 	}
@@ -281,33 +281,25 @@ int main(int argc, char **argv)
 			refnoise = new crefnoise("/dev/ttyACM0");
 		}
 
-		cout << "opening signal devices:";
-
 		for (auto n: vdefs){
 			v_devices.push_back(new crtlsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc)); //this must be made std::unique_ptr or std::shared_ptr...
 			if (v_devices.back()->open(n.serial)){
-				delete v_devices.back();
+				delete v_devices.back(); //opening the signaldevice failed
 				v_devices.pop_back();
-				cout<<"!";
 			}
 			else
 			{
-				cout<<"*";
-				v_devices.back()->set_agcmode(ops.agc);
+				v_devices.back()->set_agcmode(ops.agc); //openin signaldevice succeeded
 				v_devices.back()->set_transport(transport);
 			}
-			cout.flush();
 		}
 
-		cout << endl;
-
 		refnoise->set_state(true);		
-		cout << "creating barrier" <<endl;
+		
 		startbarrier = new barrier(v_devices.size()+1);
 		
-		cout << "starting capture on the reference device" <<endl;
 		ref_dev->start(startbarrier);
-		cout << "starting capture on the signal devices" <<endl;
+		
 		for (auto d : v_devices){
 			d->start(startbarrier);
 		}
@@ -316,22 +308,14 @@ int main(int argc, char **argv)
 		
 		console.start();
 
-		cout << "starting coherence" <<endl;
-		
 		ccoherent coherent(ref_dev,&v_devices, refnoise, nfft);
 		coherent.start();
-		
-		cout << "entering main loop" <<endl;
-		
+				
 		while(!exit_all){
 			transport->send(); //main thread just waits on data and publishes when available.
 		}
 
-		cout << "stopping coherent thrd" <<endl;
 		coherent.request_exit(); coherent.join();
-
-		cout << "stopping devices" <<endl;
-
 		ref_dev->stop();
 		ref_dev->request_exit();
 		ref_dev->close();
@@ -341,10 +325,8 @@ int main(int argc, char **argv)
 			d->request_exit();
 		}
 
-		cout << "stopping console" <<endl;
 		console.request_exit();
 
-		cout << "closing devices" <<endl;
 		for (auto d : v_devices)
 			d->close();
 
@@ -356,10 +338,7 @@ int main(int argc, char **argv)
 		}
 		
 		delete startbarrier;
-		cout << "closing reference" <<endl;
 		delete ref_dev;
-		
-
 		cpacketize::cleanup();
 		delete refnoise;
 	}

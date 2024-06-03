@@ -207,6 +207,7 @@ int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<floa
 
     if(f32bit){
     	std::memcpy((std::complex<float> *) packetbuf_f32_0.get()+loc,in,(blocksize>>1)*sizeof(std::complex<float>));
+    	
     	if(rowmajor){
     		convert_to_rowmajor(loc);
     	}
