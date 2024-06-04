@@ -131,9 +131,9 @@ int crtlsdr::open(uint32_t index){
 	if (ret!=0) return ret;
 	ret = set_fcenter(fcenter);
 	if (ret!=0) return ret;
-	ret = set_agcmode(enableagc);
+	ret = set_agc_mode(enableagc);
 	if (ret!=0) return ret;
-	ret = set_tunergainmode(1);
+	ret = set_tuner_gain_mode(0);
 	if (ret!=0) return ret;
 	ret = set_tuner_gain(rfgain);
 	if (ret!=0) return ret;
@@ -159,7 +159,7 @@ int crtlsdr::set_samplerate(uint32_t fs){
 	return rtlsdr_set_sample_rate(dev,fs);
 }
 
-int crtlsdr::set_agcmode(bool flag){
+int crtlsdr::set_agc_mode(bool flag){
 	uint32_t agc = (flag) ? 1 : 0;
 	return rtlsdr_set_agc_mode(dev, agc);
 }
@@ -182,7 +182,7 @@ int crtlsdr::set_if_gain(uint32_t gain){
 	return 0; //this exists. not implemented yet.
 }
 
-int crtlsdr::set_tunergainmode(uint32_t mode){
+int crtlsdr::set_tuner_gain_mode(uint32_t mode){
 	return rtlsdr_set_tuner_gain_mode(dev, mode);
 }
 

@@ -109,14 +109,14 @@ public:
 	virtual int set_fcenter(uint32_t f) = 0;
 	virtual int set_samplerate(uint32_t fs) = 0;
 
-	virtual int set_agcmode(bool flag)=0;
+	virtual int set_agc_mode(bool flag)=0;
 	virtual int set_tuner_gain(int gain)=0;
 	virtual uint32_t get_tuner_gain()=0;
 
 	virtual int set_if_gain(uint32_t gain)=0;
 	virtual uint32_t get_if_gain()=0;
 
-	virtual int set_tunergainmode(uint32_t mode)=0;
+	virtual int set_tuner_gain_mode(uint32_t mode)=0;
 	virtual int set_correction_f(float f)=0;
 
 	virtual int8_t *swapbuffer(uint8_t *b) = 0;
@@ -244,14 +244,14 @@ public:
 	int set_fcenter(uint32_t f);
 	int set_samplerate(uint32_t fs);
 
-	int set_agcmode(bool flag);
+	int set_agc_mode(bool flag);
 	int set_tuner_gain(int gain);
 	uint32_t get_tuner_gain();
 
 	int set_if_gain(uint32_t gain);
 	uint32_t get_if_gain();
 
-	int set_tunergainmode(uint32_t mode);
+	int set_tuner_gain_mode(uint32_t mode);
 	int set_correction_f(float f);
 
 	uint32_t get_asyncbufn(){return asyncbufn;};
