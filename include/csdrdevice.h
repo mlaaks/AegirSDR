@@ -113,10 +113,10 @@ public:
 	virtual int set_tuner_gain(int gain)=0;
 	virtual uint32_t get_tuner_gain()=0;
 
-	virtual int set_if_gain(uint32_t gain)=0;
+	virtual int set_if_gain(int gain)=0;
 	virtual uint32_t get_if_gain()=0;
 
-	virtual int set_tuner_gain_mode(uint32_t mode)=0;
+	virtual int set_tuner_gain_mode(int mode)=0;
 	virtual int set_correction_f(float f)=0;
 
 	virtual int8_t *swapbuffer(uint8_t *b) = 0;
@@ -248,10 +248,13 @@ public:
 	int set_tuner_gain(int gain);
 	uint32_t get_tuner_gain();
 
-	int set_if_gain(uint32_t gain);
+	int set_if_gain(int gain);
 	uint32_t get_if_gain();
 
-	int set_tuner_gain_mode(uint32_t mode);
+	int set_tuner_gain_ext(int lna_gain, int mixer_gain,int vga_gain);
+
+	int set_tuner_gain_mode(int mode);
+
 	int set_correction_f(float f);
 
 	uint32_t get_asyncbufn(){return asyncbufn;};

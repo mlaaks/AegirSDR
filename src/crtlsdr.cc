@@ -160,14 +160,30 @@ int crtlsdr::set_samplerate(uint32_t fs){
 }
 
 int crtlsdr::set_agc_mode(bool flag){
-	uint32_t agc = (flag) ? 1 : 0;
-	return rtlsdr_set_agc_mode(dev, agc);
+	return rtlsdr_set_agc_mode(dev, (flag) ? 1 : 0);
 }
 
 int crtlsdr::set_tuner_gain(int gain){
 	rfgain = gain;
 	//cout << "Trying to set tuner gain " << to_string(devnum) << endl;
 	return rtlsdr_set_tuner_gain(dev, gain);
+}
+
+/*!
+ * Set LNA / Mixer / VGA Device Gain for R820T/2 device is configured to.
+ *
+ * \param dev the device handle given by rtlsdr_open()
+ * \param lna_gain index in 0 .. 15: 0 == min;   see tuner_r82xx.c table r82xx_lna_gain_steps[]
+ * \param mixer_gain index in 0 .. 15: 0 == min; see tuner_r82xx.c table r82xx_mixer_gain_steps[]
+ * \param vga_gain index in 0 .. 15: 0 == -12 dB; 15 == 40.5 dB; => 3.5 dB/step;
+ *        vga_gain index 16 activates AGC for VGA controlled from RTL2832
+ *     see tuner_r82xx.c table r82xx_vga_gain_steps[]
+ * \return 0 on success
+ */
+
+
+int crtlsdr::set_tuner_gain_ext(int lna_gain, int mixer_gain, int vga_gain){
+	return rtlsdr_set_tuner_gain_ext(dev,lna_gain, mixer_gain, vga_gain);
 }
 
 uint32_t crtlsdr::get_tuner_gain(){
@@ -178,11 +194,34 @@ uint32_t crtlsdr::get_if_gain(){
 	return 0; //no such function in rtl_sdr.h 
 }
 
-int crtlsdr::set_if_gain(uint32_t gain){
-	return 0; //this exists. not implemented yet.
+
+
+/*!
+ * Set the agc_variant for automatic gain mode for the device (only R820T/2).
+ * Automatic gain mode must be enabled for the gain setter function to work.
+ *
+ * \param dev the device handle given by rtlsdr_open()
+ * \param if_mode:
+ *         0           set automatic VGA, which is controlled from RTL2832
+ *     -2500 .. +2500: set fixed IF gain in tenths of a dB, 115 means 11.5 dB.
+ *                     use -1 or +1 in case you neither want attenuation nor gain.
+ *                     this equals the VGA gain for R820T/2 tuner.
+ *                     exact values (R820T/2) are in range -47 .. 408 in tenth of a dB,
+ *                       giving -4.7 .. +40.8 dB. these exact values may slightly change
+ *                       with better measurements.
+ *     10000 .. 10015: IF gain == VGA index from parameter if_mode
+ *                     set if_mode by index: index := VGA_idx +10000
+ *     10016 .. 10031: same as 10000 .. 10015, but additionally set automatic VGA
+ *     10011:          for fixed VGA (=default) of -12 dB + 11 * 3.5 dB = 26.5 dB
+ * 
+ * \return 0 on success
+ */
+
+int crtlsdr::set_if_gain(int gain){
+	return rtlsdr_set_tuner_if_mode(dev, gain);
 }
 
-int crtlsdr::set_tuner_gain_mode(uint32_t mode){
+int crtlsdr::set_tuner_gain_mode(int mode){
 	return rtlsdr_set_tuner_gain_mode(dev, mode);
 }
 
