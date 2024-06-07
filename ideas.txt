@@ -1,0 +1,39 @@
+Some ideas for making the code publishable, better performing, more versatile and modern. In no
+particular order: 
+
+	Verify channel order for KrakenSDR, e.g. which physical channel is '1001' or '1000'
+
+	Add support for individual channel bias tees instead of them all, quite useless feature for now.
+
+	add support for R820T/2 new functionality, rtlsdr_set_tuner_gain_ext(...). Note, these do not exist in the
+	official&original Osmocom librtlsdr source, but come from experimental forks?
+	Check https://www.rtl-sdr.com/gui-for-controlling-the-r820t2-filters-and-registers/ where this was implemented
+	already in 2018.
+
+	add support to gperftools (formerly) Google performance tools, useful for debugging and optimizing performance,
+	particularly (works particularly well with threads and STL)
+
+	Use a static analysis tool to help clean up the syntax and structure, e.g. "clang-tidy is a clang-based C++ “linter""
+
+	modernize: use C++ nullptr, shared_ptr and unique_ptr, for example. Which C++ standard should we target?
+
+	get rid of ZMQ and favor plain TCP/IP sockets instead? ZMQ was not thread-safe when this was originally written?,
+	it is now but is it worth it.
+
+	fork the librtlsdr KrakenSDR variant to better control it from changes
+
+	modernize cmake related files
+
+	get rid of deprecation warnings when building, the libraries used have developed
+
+	get rid of Stallman's GNU Readline and licence with LGPL instead of GPL.
+
+	enable easier cross-building for ARM targets
+
+	Add support for SoapySDR for better compatibility.
+
+	Related to the bias tee voltage, if all else fails: open the KrakenSDR and determine if its easily possible
+	to control the voltage, 5V by default. At the moment, Laufer has verified from the electronic design team
+	that this voltage comes directly from the 5V source (what source, USB?, is this filtered at all). Determine
+	if its easily reduced to e.g. 3.3V
+
