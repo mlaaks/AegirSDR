@@ -37,3 +37,15 @@ particular order:
 	that this voltage comes directly from the 5V source (what source, USB?, is this filtered at all). Determine
 	if its easily reduced to e.g. 3.3V
 
+	Ultimate GOAL: Add support for other reference noise calibrated SDRs, a design goal that existed in the early
+	stages of my coherent-rtlsdr project but was discarded due to academic time constraints. This is the reason 
+	for making the base class csdrdevice virtual and inheriting crtlsdr from it. Somewhere along the road, I got lost
+	and implemented it in very confusing way. The virtual class needs reworking and rethinking. This can be a fast
+	modification.
+
+	Move the code out of the .h files!
+
+	
+
+
+
