@@ -1,6 +1,6 @@
 # AegirSDR
 
-KrakenSDR support for the old project coherent-rtlsdr.
+KrakenSDR support for the old project coherent-rtlsdr. Build instructions (untested) are as follows:
 
 # Get dependencies on debian:
 
