@@ -30,7 +30,8 @@ particular order:
 
 	enable easier cross-building for ARM targets
 
-	Add support for SoapySDR for better compatibility.
+	Add support for SoapySDR for better compatibility with other SDR software, such as GNU Radio, Matlab? SoapySDR supports
+	multiple channel streams directly and is updated relatively recently. OsmoSDR is one option too.
 
 	Related to the bias tee voltage, if all else fails: open the KrakenSDR and determine if its easily possible
 	to control the voltage, 5V by default. At the moment, Laufer has verified from the electronic design team
