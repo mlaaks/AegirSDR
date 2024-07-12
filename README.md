@@ -1,4 +1,3 @@
-# AegirSDR
 ![AegirSDR](https://github.com/mlaaks/AegirSDR/blob/main/graphics/logo.png)
 
 KrakenSDR support for the old project coherent-rtlsdr. Build instructions (untested) are as follows:
