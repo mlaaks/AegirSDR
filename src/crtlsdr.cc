@@ -15,9 +15,11 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "csdrdevice.h"
+#include "crtlsdr.h"
+#include "common.h"
 #include <unistd.h>
 #include <csignal>
+
 
 void crtlsdr::start(barrier *b){
 	startbarrier = b;

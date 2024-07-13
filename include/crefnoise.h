@@ -20,7 +20,7 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <iostream>
 #include <fstream>
-#include <csdrdevice.h>
+#include "crtlsdr.h"
 
 /*
     TODO: Edit the code to crefnoise.cc file from header file

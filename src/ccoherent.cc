@@ -13,12 +13,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#include "ccoherent.h"
-
-#include "unistd.h"
 #include <iostream>
 #include <mutex>
+#include "ccoherent.h"
+#include "unistd.h"
 
 #ifdef RASPBERRYPI
 int uint32log2(uint32_t k){
@@ -230,11 +228,9 @@ void ccoherent::threadf(ccoherent *ctx){
 		ctx->refdev->packetize->write(0,ctx->refdev->get_readcntbuf(),ref_f32);
 		ctx->refdev->consume();
 
-		
-		//{ //remove unused scope
 		int c=1;
-		for(auto *d:*ctx->devices){
-			int8_t *ptr = d->read(); //ptr? why take it? remove
+		for(auto *d:*ctx->devices){ 
+			d->read();
 			if(d->is_ready()){
 				std::complex<float> *sfloat = (std::complex<float> *) d->convtofloat();
 				if (d->is_lagrequested()){
@@ -256,7 +252,6 @@ void ccoherent::threadf(ccoherent *ctx){
 			ctx->computelag();
 		}
 		ctx->refdev->packetize->notifysend();
-		//}
 	}
 }
 

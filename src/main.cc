@@ -24,9 +24,11 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <mutex>
 
+//#include "csdrdevice.h"
+#include "crtlsdr.h"
 #include "console.h"
-#include "csdrdevice.h"
 #include "ccoherent.h"
 #include "cpacketizer.h"
 #include "common.h"
@@ -184,7 +186,7 @@ int parsecommandline(cl_ops *ops, int argc, char **argv){
 int main(int argc, char **argv)
 {
 
-	int nfft = 8; //rename for clarity. this is the maximum number of simultaneous 'fft-tickets' lag queue hands out
+	int nfftqueue = 8;
 	crefnoise * refnoise;
 
 	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
@@ -308,20 +310,15 @@ int main(int argc, char **argv)
 		
 		console.start();
 
-		ccoherent coherent(ref_dev,&v_devices, refnoise, nfft);
+		ccoherent coherent(ref_dev,&v_devices, refnoise, nfftqueue);
 		coherent.start();
-
-		/*
-		cout <<"Tuner gains : " << to_string(ref_dev->get_tuner_gain()) << endl;
-		for(auto d : v_devices){
-			cout << to_string(d->get_tuner_gain()) << endl;
-		}*/
 				
 		while(!exit_all){
 			transport->send(); //main thread just waits on data and publishes when available.
 		}
 
-		coherent.request_exit(); coherent.join();
+		coherent.request_exit(); 
+		coherent.join();
 		ref_dev->stop();
 		ref_dev->request_exit();
 		ref_dev->close();

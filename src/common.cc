@@ -1,4 +1,7 @@
 #include "common.h"
+
+
+//debugging purposes we check buffers
 bool is_zeros(uint32_t *p,int n){
     bool res=true;
     for(int k=0;k<n;++k){

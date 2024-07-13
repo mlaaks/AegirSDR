@@ -18,25 +18,10 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef CSDRDEVICEH
 #define CSDRDEVICEH
 
-#include <rtl-sdr.h>
-#include <chrono>
-#include <iostream>
-#include <cstring>
-#include <atomic>
-#include <thread>
-
-#include <volk/volk.h>
-#include <fftw3.h>
-#include <complex>
-
 #include "ccontrol.h"
 #include "common.h"
 #include "cdsp.h"
 #include "cpacketizer.h"
-
-/*
-    TODO: Edit the code to crtlsdr.cc & crefdev.cc files from header files
-*/
 
 
 //forward declaration, these classes have a circular dependency
@@ -57,17 +42,15 @@ struct lagpoint{
 	}
 };
 
-
 /*
 The virtual csdrdevice base class. Could theoretically add support for
 other noise source calibrated coherent SDRs in the future.
 */
-
 class csdrdevice{
-	uint32_t					readcnt;
+	//uint32_t					readcnt;
 
 protected:
-	ccontrol 					*controller;
+	//ccontrol 					*controller;
 	std::thread 				thread;
 	std::mutex 					mtx;
 	std::condition_variable 	cv;
@@ -101,14 +84,29 @@ protected:
 	std::string					devname;
 	
 public:
+/*
+The virtual csdrdevice base class. Could theoretically add support for
+other noise source calibrated coherent SDRs in the future.
+*/
+//class csdrdevice{
+	void set_transport(cpacketize *transport_){
+		packetize=transport_;
+	};
+	uint32_t					readcnt;
+
+//protected:
+	ccontrol 					*controller;
+	//std::thread 				thread;
+	//std::mutex 				mtx;
+
 	cpacketize					*packetize;
 	
+public:
 	virtual int open(uint32_t index) = 0;
 	virtual int open(std::string name) = 0; 
 	virtual int close() = 0;
 	virtual int set_fcenter(uint32_t f) = 0;
 	virtual int set_samplerate(uint32_t fs) = 0;
-
 	virtual int set_agc_mode(bool flag)=0;
 	virtual int set_tuner_gain(int gain)=0;
 	virtual uint32_t get_tuner_gain()=0;
@@ -201,110 +199,7 @@ public:
 		return synced;
 	};
 
-	void set_transport(cpacketize *transport_){
-		packetize=transport_;
-	};
-
 	csdrdevice(uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_);
 	virtual ~csdrdevice();
 };
-
-/*
-The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functions.
-*/
-
-class crtlsdr: public csdrdevice{
-	uint32_t	 	devnum;
-	uint32_t		rfgain;
-	bool			enableagc;
-	
-	static void 	asynch_callback(unsigned char *buf, uint32_t len, void *ctx);
-
-	int8_t	 		*swapbuffer(uint8_t *b);
-	uint32_t		asyncbufn;
-
-protected:
-	rtlsdr_dev_t	*dev;
-    cbuffer         s8bit;
-	static void 	asynch_threadf(crtlsdr *d);
-	barrier			*startbarrier;
-	
-public:
-	static uint32_t get_device_count();
-
-	static std::string get_device_name(uint32_t index);
-	static int         get_index_by_serial(std::string serial);
-	static std::string get_device_serial(uint32_t index);
-	static std::string get_usb_str_concat(uint32_t index);
-
-	int open(uint32_t index);
-	int open(std::string name);
-
-	int close();
-	int set_fcenter(uint32_t f);
-	int set_samplerate(uint32_t fs);
-
-	int set_agc_mode(bool flag);
-	int set_tuner_gain(int gain);
-	uint32_t get_tuner_gain();
-
-	int set_if_gain(int gain);
-	uint32_t get_if_gain();
-
-	int set_tuner_gain_ext(int lna_gain, int mixer_gain,int vga_gain);
-
-	int set_tuner_gain_mode(int mode);
-
-	int set_correction_f(float f);
-
-	uint32_t get_asyncbufn(){return asyncbufn;};
-
-	bool is_ready(){
-		return ((get_readcnt() >= get_asyncbufn()) && streaming);
-	};
-
-	const std::complex<float> *convtofloat(); //needed for overloading in case of reference channel.
-	const std::complex<float> *convtofloat(const std::complex<float>*);
-
-	void start(barrier *b);
-	void startcontrol();
-	void stop();
-    
-    uint32_t get_readcntbuf(){
-        return s8bit.get_rcnt();
-    };
-    
-	int8_t *read();
-	void consume(){s8bit.consume();};
-
-	crtlsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : csdrdevice(blocksize_,samplerate_,fcenter_), s8bit(asyncbufn_,blocksize_){
-		asyncbufn = asyncbufn_;
-		rfgain    = 0;
-	};
-	~crtlsdr(){
-	};
-};
-
-
-/*
-The crefsdr class. In this implementation, the reference channel is a special case, which in 
-the original coherent-rtlsdr was not use for signals. I.e., it only captured the common refecence noise
-*/
-
-class crefsdr: public crtlsdr{
-	/*needed for overloading in case of reference channel. this just places the data in the second half of the buffer.
-	  This is a trick for frequency domain (circular) cross-correlation, which saves some CPU cycles.
-	*/
-public:
-	const std::complex<float> *convtofloat();
-	const std::complex<float> *convtofloat(const std::complex<float>*);
-	//const std::complex<float>* get_sptr(); //not needed
-
-	void start(barrier *b);
-	void set_reference_noise_state(bool state);
-	void set_bias_tee_state(uint32_t channel,bool state);
-
-	crefsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : crtlsdr(asyncbufn_,blocksize_,samplerate_,fcenter_){};
-};
-
 #endif
