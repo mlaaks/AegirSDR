@@ -3,7 +3,7 @@ AegirSDR
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
+the Free Software Foundationtransport, either version 3 of the License, or
 (at your option) any later version.
 
 coherent-rtlsdr is distributed in the hope that it will be useful,
@@ -19,45 +19,45 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <iostream>
 #include <arpa/inet.h>
-#include "cpacketizer.h"
+#include "ctransport.h"
 #include "cdsp.h"
 
-cpacketize*								cpacketize::cpacketize_ = nullptr;
-int 									cpacketize::objcount=0;
-uint32_t 								cpacketize::globalseqn=0;
-uint32_t								cpacketize::nchannels=0;
-std::condition_variable 				cpacketize::cv;
-zmq::socket_t		 					*cpacketize::socket;
-zmq::context_t 							*cpacketize::context;
-std::mutex 								cpacketize::bmutex;
-std::unique_ptr<int8_t[]>				cpacketize::packetbuf0;
-std::unique_ptr<int8_t[]>				cpacketize::packetbuf1;
-std::unique_ptr<std::complex<float>[]>	cpacketize::packetbuf_f32_0;
-std::unique_ptr<std::complex<float>[]>	cpacketize::packetbuf_f32_1;
-bool 									cpacketize::noheader;
-bool									cpacketize::rowmajor;
-bool									cpacketize::f32bit;
-size_t 									cpacketize::packetlen=0;
+ctransport*								ctransport::ctransport_ = nullptr;
+int 									ctransport::objcount=0;
+uint32_t 								ctransport::globalseqn=0;
+uint32_t								ctransport::nchannels=0;
+std::condition_variable 				ctransport::cv;
+zmq::socket_t		 					*ctransport::socket;
+zmq::context_t 							*ctransport::context;
+std::mutex 								ctransport::bmutex;
+std::unique_ptr<int8_t[]>				ctransport::packetbuf0;
+std::unique_ptr<int8_t[]>				ctransport::packetbuf1;
+std::unique_ptr<std::complex<float>[]>	ctransport::packetbuf_f32_0;
+std::unique_ptr<std::complex<float>[]>	ctransport::packetbuf_f32_1;
+bool 									ctransport::noheader;
+bool									ctransport::rowmajor;
+bool									ctransport::f32bit;
+size_t 									ctransport::packetlen=0;
 
-int 									cpacketize::writecnt=0;
-bool									cpacketize::bufferfilled=false;
-uint32_t								cpacketize::blocksize=0;
-bool									cpacketize::do_exit=false;
+int 									ctransport::writecnt=0;
+bool									ctransport::bufferfilled=false;
+uint32_t								ctransport::blocksize=0;
+bool									ctransport::do_exit=false;
 
-std::vector<std::complex<float>> 		cpacketize::pcorrection;
+std::vector<std::complex<float>> 		ctransport::pcorrection;
 zmq::socket_t 							*debugsocket;
 
-cpacketize::cpacketize(){
+ctransport::ctransport(){
     objcount++; 			
 }
 
-cpacketize::~cpacketize(){
+ctransport::~ctransport(){
 	objcount--;
-	delete cpacketize_;
+	delete ctransport_;
 }
 
 
-cpacketize *cpacketize::init(std::string address,bool noheader_,bool rowmajor_,bool f32bit_,uint32_t nchannels_,uint32_t blocksize_){
+    ctransport *ctransport::init(std::string address,bool noheader_,bool rowmajor_,bool f32bit_,uint32_t nchannels_,uint32_t blocksize_){
 	context = new zmq::context_t(1);
 	socket  = new zmq::socket_t(*context,ZMQ_PUB);
 	socket->bind(address.data());
@@ -67,10 +67,13 @@ cpacketize *cpacketize::init(std::string address,bool noheader_,bool rowmajor_,b
 	nchannels=nchannels_;
 	f32bit = f32bit_;
 
+
+
+
 	debugsocket = new zmq::socket_t(*context,ZMQ_PUB);
 	debugsocket->bind("tcp://*:5557");
 
-	packetlen  = cpacketize::packetlength(nchannels,blocksize);
+	packetlen  = ctransport::packetlength(nchannels,blocksize);
 
 	if (f32bit){
 		packetbuf_f32_0 = std::make_unique<std::complex<float> []>(packetlen);
@@ -85,13 +88,13 @@ cpacketize *cpacketize::init(std::string address,bool noheader_,bool rowmajor_,b
 
 	pcorrection.resize(nchannels_,std::complex<float>(0.0f,0.0f));
 
-	if (cpacketize_==nullptr){
-		cpacketize_ = new cpacketize();
+	if (ctransport_==nullptr){
+		ctransport_ = new ctransport();
 	}
-    return cpacketize_;
+    return ctransport_;
 }
 
-void cpacketize::cleanup(){
+void ctransport::cleanup(){
 	socket->close();
 	debugsocket->close();
 	delete context;
@@ -99,11 +102,11 @@ void cpacketize::cleanup(){
 	delete debugsocket;
 }
 
-void cpacketize::request_exit(){
+void ctransport::request_exit(){
 		do_exit = true;
 }
 
-size_t cpacketize::packetlength(uint32_t N,uint32_t L){
+size_t ctransport::packetlength(uint32_t N,uint32_t L){
 	if (f32bit){
 		if (noheader){
 			return (N*(L>>1)*sizeof(std::complex<float>));
@@ -122,7 +125,7 @@ size_t cpacketize::packetlength(uint32_t N,uint32_t L){
 	}
 }
 
-int cpacketize::send(){
+int ctransport::send(){
 	if (!noheader){
 		//fill static header. block readcounts filled by calls to write:
 		hdr0 *hdr 		= f32bit ? (hdr0 *) packetbuf_f32_0.get() : (hdr0 *) packetbuf0.get();
@@ -150,12 +153,12 @@ int cpacketize::send(){
     return 0;
 }
 
-int cpacketize::writedebug(uint32_t channeln,std::complex<float> p){
+int ctransport::writedebug(uint32_t channeln,std::complex<float> p){
 	pcorrection[channeln] = p;
     return 0;
 }
 
-int cpacketize::convert_to_rowmajor(uint32_t loc){
+int ctransport::convert_to_rowmajor(uint32_t loc){
 	std::complex<float> *p = packetbuf_f32_0.get();
 	std::complex<int8_t> *p8bit = (std::complex<int8_t> *) packetbuf0.get();
 
@@ -177,7 +180,7 @@ int cpacketize::convert_to_rowmajor(uint32_t loc){
 	return 0;
 }
 
-int cpacketize::convert_to_network_byte_order(uint32_t loc){
+int ctransport::convert_to_network_byte_order(uint32_t loc){
 	if (f32bit){
 		std::complex<float> *p = packetbuf_f32_0.get()+loc;
 		for(uint64_t i=0;i<(blocksize>>1);i++){
@@ -187,7 +190,7 @@ int cpacketize::convert_to_network_byte_order(uint32_t loc){
 	return 0;
 }
 
-int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<float> *in){
+int ctransport::write(uint32_t channeln,uint32_t readcnt,const std::complex<float> *in){
     uint32_t loc;
 
     if (noheader){
@@ -218,7 +221,7 @@ int cpacketize::write(uint32_t channeln,uint32_t readcnt,const std::complex<floa
     return 0;
 }
 
-int cpacketize::notifysend(){
+int ctransport::notifysend(){
 	std::unique_lock<std::mutex> lock(bmutex);
 
 	if (f32bit){

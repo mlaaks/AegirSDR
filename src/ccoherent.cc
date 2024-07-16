@@ -225,7 +225,7 @@ void ccoherent::threadf(ccoherent *ctx){
 		int8_t *refsptr = ctx->refdev->read();
 		std::complex<float> *ref_f32 = (std::complex<float> *) ctx->refdev->convtofloat();
 		ctx->queuelag(ctx->refdev);
-		ctx->refdev->packetize->write(0,ctx->refdev->get_readcntbuf(),ref_f32);
+		ctx->refdev->transport->write(0,ctx->refdev->get_readcntbuf(),ref_f32);
 		ctx->refdev->consume();
 
 		int c=1;
@@ -242,8 +242,8 @@ void ccoherent::threadf(ccoherent *ctx){
 				}
 				
 				d->phasecorrect();
-				d->packetize->write(c,d->get_readcntbuf(),d->get_samplepointer());
-				d->packetize->writedebug(c,d->get_phasecorrect());
+				d->transport->write(c,d->get_readcntbuf(),d->get_samplepointer());
+				d->transport->writedebug(c,d->get_phasecorrect());
 				c++;
 				d->consume();
 			}
@@ -251,7 +251,7 @@ void ccoherent::threadf(ccoherent *ctx){
 		if (ctx->lagqueuesize()>1){
 			ctx->computelag();
 		}
-		ctx->refdev->packetize->notifysend();
+		ctx->refdev->transport->notifysend();
 	}
 }
 

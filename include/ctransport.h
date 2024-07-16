@@ -15,8 +15,8 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PACKETIZEH
-#define PACKETIZEH
+#pragma once
+
 #include <zmq.hpp>
 #include <string>
 #include <mutex>
@@ -39,18 +39,16 @@ struct hdr0{
 	uint32_t unused;
 };
 
-
 /*
 The packetizer singleton class. There is only one instance, it handles the ZMQ
 sockets for IQ sampledata transport. One such ZMQ message contains blocksize/2
 samples in column-major memory layout. The reference noise channel is always
 column 0, and there are nchannels rows in the sample matrix.
 */
-class cpacketize{
+class ctransport{
 
 protected:
-	static cpacketize*				cpacketize_;
-
+	static ctransport*				ctransport_;
 	static int 						objcount;
 	static zmq::context_t 			*context;
 	static zmq::socket_t  			*socket;
@@ -76,21 +74,17 @@ protected:
 
 	static size_t packetlength(uint32_t N,uint32_t L);
 
-	/* to be deleted //
-	void resize_buffers(uint32_t N, uint32_t L);
-	*/
-
-	cpacketize();
-	~cpacketize();
+	ctransport();
+	~ctransport();
 
 	int convert_to_rowmajor(uint32_t loc); //slow, needs to touch every value in matrix, complexity O(rows*colums)
-	int convert_to_network_byte_order(uint32_t loc); //quick test, remove?
+	int convert_to_network_byte_order(uint32_t loc);
 public:
 
-	cpacketize (cpacketize &a) = delete;
-	void operator=(const cpacketize &) = delete;
+	ctransport (ctransport &a) = delete;
+	void operator=(const ctransport &) = delete;
 
-	static cpacketize *init(std::string address,bool noheader_,bool rowmajor_,bool f32bit_,uint32_t nchannels_,uint32_t blocksize_);
+	static ctransport *init(std::string address,bool noheader_,bool rowmajor_,bool f32bit_,uint32_t nchannels_,uint32_t blocksize_);
 	static void cleanup();
 
 	void request_exit();
@@ -102,4 +96,3 @@ public:
 
 	int notifysend();
 };
-#endif

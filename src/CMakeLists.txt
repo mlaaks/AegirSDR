@@ -1,6 +1,6 @@
 project (AegirSDR)
 
-set(SOURCES main.cc csdrdevice.cc crtlsdr.cc console.cc ccoherent.cc cdsp.cc ccontrol.cc cpacketizer.cc common.cc)
+set(SOURCES main.cc csdrdevice.cc crtlsdr.cc console.cc ccoherent.cc cdsp.cc ccontrol.cc ctransport.cc common.cc)
 
 set(GPUFFT_DIR /opt/vc/src/hello_pi/hello_fft)
 

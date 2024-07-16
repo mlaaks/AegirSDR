@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef CSDRDEVICEH
-#define CSDRDEVICEH
+#pragma once
 
+#include <complex>
 #include "ccontrol.h"
 #include "common.h"
 #include "cdsp.h"
-#include "cpacketizer.h"
+#include "ctransport.h"
 
 
 //forward declaration, these classes have a circular dependency
@@ -50,7 +50,6 @@ class csdrdevice{
 	//uint32_t					readcnt;
 
 protected:
-	//ccontrol 					*controller;
 	std::thread 				thread;
 	std::mutex 					mtx;
 	std::condition_variable 	cv;
@@ -84,13 +83,9 @@ protected:
 	std::string					devname;
 	
 public:
-/*
-The virtual csdrdevice base class. Could theoretically add support for
-other noise source calibrated coherent SDRs in the future.
-*/
-//class csdrdevice{
-	void set_transport(cpacketize *transport_){
-		packetize=transport_;
+
+	void set_transport(ctransport *transport_){
+		transport=transport_;
 	};
 	uint32_t					readcnt;
 
@@ -99,7 +94,7 @@ other noise source calibrated coherent SDRs in the future.
 	//std::thread 				thread;
 	//std::mutex 				mtx;
 
-	cpacketize					*packetize;
+	ctransport					*transport;
 	
 public:
 	virtual int open(uint32_t index) = 0;
@@ -202,4 +197,3 @@ public:
 	csdrdevice(uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_);
 	virtual ~csdrdevice();
 };
-#endif

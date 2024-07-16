@@ -15,9 +15,7 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef COMMONH
-#define COMMONH
-
+#pragma once
 #include <condition_variable>
 #include <mutex>
 #include "cdsp.h"
@@ -63,8 +61,8 @@ public:
     	N=n;
     	L=l;
 
-    	int alignment = volk_get_alignment();
-    	for (int i=0;i<N;++i){
+    	uint32_t alignment = volk_get_alignment();
+    	for (uint32_t i=0;i<N;++i){
             readcnt[i]=0;
             timestamp[i]=0;
 
@@ -246,5 +244,3 @@ public:
 };
 
 bool is_zeros(uint32_t *p,int n);
-
-#endif

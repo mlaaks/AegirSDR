@@ -23,13 +23,10 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <zmq.hpp>
 //#include <errno.h>
 
-//extern std::atomic<bool> exit_all;
-
 std::atomic<bool> exit_console;
 
 std::atomic<bool> command_processed;
 
-//extern crefnoise refnoise;
 zmq::context_t 		ccontext(1);
 zmq::socket_t  		csocket(ccontext,ZMQ_ROUTER);
 
@@ -64,7 +61,7 @@ void remotec(std::string address){
 	char *msg;
 	size_t len;
 	while(!exit_console){
-		int nreceived = csocket.recv(&message); //socket.recv(&message,ZMQ_NOBLOCK);
+		int nreceived = csocket.recv(&message);
 		if (nreceived > 0) {
 			msg = static_cast<char*>(message.data());
 			len = message.size()/sizeof(char);

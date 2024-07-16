@@ -15,9 +15,7 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef CDSPH
-#define CDSPH
-//#include "common.h"
+#pragma once
 #include <volk/volk.h>
 #include <volk/constants.h>
 //#include <arm_neon.h> //Raspberry Pi
@@ -80,5 +78,3 @@ public:
 	static const std::string version();
 
 };
-
-#endif

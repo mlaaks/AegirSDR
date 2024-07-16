@@ -15,8 +15,7 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef CREFNOISEH
-#define CREFNOISEH
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -82,4 +81,3 @@ public:
 		fp.close();
 	};
 };
-#endif

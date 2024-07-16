@@ -21,7 +21,7 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <fftw3.h>
 
 #include "csdrdevice.h"
-#include "cpacketizer.h"
+#include "ctransport.h"
 #include "common.h"
 #include "cdsp.h"
 #include "crefnoise.h"
@@ -45,7 +45,7 @@ private:
 	lvector<csdrdevice *> *devices;
 	crefsdr *refdev;
 
-	cpacketize *packetize;
+	ctransport *transport;
 
 	fft_scheme					fftscheme,ifftscheme;
 	std::complex<float>			*sifft, *sfft;   //was fftwf_complex

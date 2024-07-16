@@ -26,11 +26,11 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include <mutex>
 
-//#include "csdrdevice.h"
+#include "csdrdevice.h"
 #include "crtlsdr.h"
 #include "console.h"
 #include "ccoherent.h"
-#include "cpacketizer.h"
+#include "ctransport.h"
 #include "common.h"
 #include "crefnoise.h"
 #include "cconfigfile.h"
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 
 		}
 		//std::cout << "device vector has " << std::to_string(v_devices.size()) << std::endl;
-		cpacketize *transport=cpacketize::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
+		ctransport *transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
 
 		crefsdr* ref_dev = new crefsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
 
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
 		
 		delete startbarrier;
 		delete ref_dev;
-		cpacketize::cleanup();
+		ctransport::cleanup();
 		delete refnoise;
 	}
 	return 1;

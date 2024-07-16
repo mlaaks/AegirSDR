@@ -11,3 +11,4 @@ set(CMAKE_CXX_FLAGS "-O3") #-Wl,-Bdynamic
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_subdirectory(src)
+add_subdirectory(soapydrv)

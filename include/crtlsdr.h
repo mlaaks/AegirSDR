@@ -19,6 +19,7 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functions.
 */
 
+#pragma once
 #include <rtl-sdr.h>
 #include <chrono>
 #include <iostream>
@@ -29,9 +30,6 @@ The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functi
 #include <volk/volk.h>
 #include <fftw3.h>
 #include "csdrdevice.h"
-
-#ifndef CRTLSDRH
-#define CRTLSDRH
 
 
 class crtlsdr: public csdrdevice{
@@ -126,4 +124,3 @@ public:
 
 	crefsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : crtlsdr(asyncbufn_,blocksize_,samplerate_,fcenter_){};
 };
-#endif
