@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 	int nfftqueue = 8;
 	crefnoise * refnoise;
 
-	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,500,500,false,"",false,false,false,false,false,false};
+	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,100,100,false,"",false,false,false,false,false,false};
 	ops.ndev = crtlsdr::get_device_count();
 	cout << to_string(ops.ndev) << " devices found." << endl;
 	parsecommandline(&ops,argc,argv);

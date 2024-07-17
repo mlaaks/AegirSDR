@@ -17,11 +17,11 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "console.h"
 
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <iterator>
 #include <zmq.hpp>
-//#include <errno.h>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 std::atomic<bool> exit_console;
 
@@ -32,23 +32,17 @@ zmq::socket_t  		csocket(ccontext,ZMQ_ROUTER);
 
 lqueue<std::string> *commandqueue;
 
+
 void localc(){
-
-	rl_bind_key('\t', rl_complete);
-	//rl_getc_function = getc; // CAUTION.
-	char *input;
-
+	std::string input;
 	while(!exit_console){
-
 		if (command_processed){
-			input = readline(":");
-			add_history(input);
+			std::getline(std::cin,input);
 			commandqueue->push(std::string(input));
 			command_processed=false;
 		}
 	}
-	cout << "Local console exiting "<< endl;
-	free(input);
+	cout << "Local console exiting"<< endl;
 }
 
 void remotec(std::string address){
@@ -148,7 +142,7 @@ void cconsole::request_exit(){
 
 int cconsole::cmdfs(std::string opt){
 
-	if (opt.compare("fs")==0)
+	if (opt.compare("samplerate")==0)
 		cout << fmtfloat("%4.6f",refdev->get_samplerate()/1e6) << " MHz" << endl;
 	else
 		try{
@@ -395,14 +389,8 @@ void cconsole::consolethreadf(cconsole *ctx)
 			case help:
 				cout <<"help"<<endl;
 			break;
-			case fs:
+			case samplerate:
 				ctx->cmdfs(options);
-			break;
-			case add:
-				ctx->cmdadd(options);
-			break;
-			case del:
-				ctx->cmddel(options);
 			break;
 			case status:
 				ctx->cmdstatus(options);
@@ -418,7 +406,7 @@ void cconsole::consolethreadf(cconsole *ctx)
 			break;
 			case nop:
 			break;
-			case fcenter:
+			case tuningfrequency:
 				ctx->cmdretune(options);
 			break;
 			case request:

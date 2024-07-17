@@ -7,16 +7,15 @@
 
 clear all;close all;
 
-nframes = 10;
 sdr = CZMQSDR('IPAddress','127.0.0.1');
-FESR = 2e6; % 2048000;
-NDEC = 10;
+FESR = 240e3;
+NDEC = 5;
 nSample = 2^16;
 scope = dsp.SpectrumAnalyzer(...
     'Name',             'Spectrum',...
     'Title',            'Spectrum', ...
     'SpectrumType',     'Power',...
-    'FrequencySpan',    'Full', ...
+    'FrequencySpan',    'Full', ..
     'SampleRate',        FESR, ...
     'YLimits',          [-50,5],...
     'SpectralAverages', 50, ...
@@ -37,6 +36,7 @@ L1frequency=1575.42e6;
 sdr();
 %sdr.CenterFrequency = L1frequency+settings.IF;
 %fname = 'iq.bin';
+sdr.CenterFrequency = 106.2e6;
 %delete(fname);
 hAudio = audioDeviceWriter(FESR/NDEC,'BufferSize',ceil(nSample*2/NDEC));
 while 1
@@ -49,11 +49,11 @@ while 1
     %data = x(1:(settings.acquisition.cohCodePeriods*settings.acquisition.nonCohSums+1)*samplesPerCode*3,1);
     %acqResults = acquisition(data.', (settings);
     %z = fmdemod(y,Fc,fscanf3e6,75000)
-    s = x(2:end,4);
-    sd = x(1:end-1,4);
+    s = x(2:end,2);
+    sd = x(1:end-1,2);
 
-    desic = angle(conj(s).*sd);
-    desic = resample(desic,1,10);
+    desic = angle(s.*conj(sd));
+    desic = resample(desic,1,5);
     hAudio(desic);
 end
 
@@ -63,7 +63,7 @@ release(bbw);
 function n = write8bitIQ(x,fname)
     file = fopen(fname, 'a');
     
-    xinterleaved(1:2:size(x,1)*2,:) = real(x);
+    xinterleaved(1:2:size(x,1)*2,:) = real(x);dedesicsic
     xinterleaved(2:2:size(x,1)*2,:) = imag(x);
     
     n = fwrite(file, int8(127.0*xinterleaved), 'int8');

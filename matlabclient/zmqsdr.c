@@ -149,7 +149,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         break;
         case 't':
         	{
-        		int clen = sprintf(commandbuf,"fcenter %d",args.centerfreq);
+        		int clen = sprintf(commandbuf,"tuningfrequency %d",args.centerfreq);
         		zmq_send(socketc,commandbuf,clen,0);
         	}
         break;

@@ -43,15 +43,13 @@ using namespace std;
 
 enum command_code{
 	help,
-	fs,
-	add,
-	del,
+	samplerate,
 	status,
 	list,
 	nop,
 	logs,
 	quit,
-	fcenter,
+	tuningfrequency,
 	request,
 	phase,
 	tunergain
@@ -61,15 +59,13 @@ enum command_code{
 
 const static std::unordered_map<std::string,int> command_codes{
 	{"help",help},
-	{"fs",fs},
-	{"add",add},
-	{"del",del},
+	{"samplerate",samplerate},
 	{"status",status},
 	{"list",list},
 	{"nop",nop},
 	{"log",logs},
 	{"quit",quit},
-	{"fcenter",fcenter},
+	{"tuningfrequency",tuningfrequency},
 	{"request",request},
 	{"phase",phase},
 	{"tunergain",tunergain}
