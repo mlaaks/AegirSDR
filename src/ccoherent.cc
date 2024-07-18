@@ -185,8 +185,9 @@ void ccoherent::computelag()
 			b=-0.5f*(*(ptr-1))+0.5f*(*(ptr+1));
 
 			//handle possible divide by zero by setting the fractional to zero:
-			if (a!=0.0f)
+			if (a!=0.0f){
 				D=-b/a;
+			}
 			else{
 				D=0.0f;
 				cout << "frac zeroed at 1" <<endl;
@@ -197,14 +198,6 @@ void ccoherent::computelag()
 		else{
 			lag = idx;
 		}
-/*
-		complex<float> *ptrc = (sifft + (k+1)*blocksize/2 + idx);
-		mag = (ptrc[0]*conj(ptrc[0])).real();
-		a = -ptrc[-1].real() - 2.0f*ptrc[0].real() + ptrc[1].real();
-		b = -0.5f*ptrc[-1].real() + 0.5f*ptrc[1].real();
-		D = -(b/a)*(1.0f+M_PI/2);
-		lag = D + idx;
-*/
 
 		lag-=(blocksize >> 1);
 		lagqueue[k]->set_lag(lag,mag);

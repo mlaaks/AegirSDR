@@ -25,6 +25,7 @@ along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <fcntl.h>
 #include <mutex>
+#include <Python.h>
 
 #include "csdrdevice.h"
 #include "crtlsdr.h"
@@ -205,7 +206,8 @@ int main(int argc, char **argv)
 	if (crtlsdr::get_index_by_serial(ops.refname)<0){
 		cout << "reference '"<< ops.refname <<"' not found, exiting" << endl;
 		exit(1);
-	}
+	};
+
 
 	{
 		barrier *startbarrier;
@@ -330,8 +332,9 @@ int main(int argc, char **argv)
 
 		console.request_exit();
 
-		for (auto d : v_devices)
+		for (auto d : v_devices){
 			d->close();
+		}
 
 		console.join();
 
@@ -342,8 +345,8 @@ int main(int argc, char **argv)
 		
 		delete startbarrier;
 		delete ref_dev;
-		ctransport::cleanup();
 		delete refnoise;
+		ctransport::cleanup();
 	}
 	return 1;
 }

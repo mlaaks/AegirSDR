@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "crtlsdr.h"
+#include "crtlsdr.h"		
 #include "common.h"
 #include <unistd.h>
 #include <csignal>
@@ -117,7 +117,8 @@ std::string crtlsdr::get_usb_str_concat(uint32_t index){
 	return std::string(serial) +" : " + std::string(product) + " : " + std::string(manufact);
 }
 
-int crtlsdr::open(std::string name){
+int crtlsdr::open(std::string name){		
+
 	return open(crtlsdr::get_index_by_serial(name.data()));
 }
 
@@ -135,7 +136,7 @@ int crtlsdr::open(uint32_t index){
 	if (ret!=0) return ret;
 	ret = set_agc_mode(enableagc);
 	if (ret!=0) return ret;
-	ret = set_tuner_gain_mode(0);
+	ret = set_tuner_gain_mode(1);
 	if (ret!=0) return ret;
 	ret = set_tuner_gain(rfgain);
 	if (ret!=0) return ret;
