@@ -1,6 +1,6 @@
 %AegirSDR
 %
-%Matlab script demonstrating CZMQSDR
+%Matlab script demonstrating CZMQSDR2
 
 %Receive samples, examine spectrum (in realtime if possible, but zmq-
 %buffers can and will stretch if matlab polls the socket too slowly).
@@ -8,8 +8,8 @@
 clear all;close all;
 
 sdr = CZMQSDR('IPAddress','127.0.0.1');
-FESR = 2e6;
-NDEC = 40;
+FESR = 200e6;
+NDEC = 5;
 nSample = 2^16;
 scope = dsp.SpectrumAnalyzer(...
     'Name',             'Spectrum',...
@@ -36,7 +36,7 @@ L1frequency=1575.42e6;
 sdr();
 %sdr.CenterFrequency = L1frequency+settingsettingss.IF;
 %fname = 'iq.bin';
-sdr.CenterFrequency = 94e6 -40e3;
+sdr.CenterFrequency = 934e6; %91.9e6;% -40e3;
 
 sdr();
 %delete(fname);
@@ -55,9 +55,9 @@ while 1
     s = x(2:end,2);
     sd = x(1:end-1,2);
 
-    desic = angle(s.*conj(sd));
-    desic = resample(desic,1,NDEC);
-    hAudio(desic-mean(desic));
+ %   desic = angle(s.*conj(sd));
+  %  desic = resample(desic,1,NDEC);
+   % hAudio(desic-mean(desic));
 end
 
 release(sdr);

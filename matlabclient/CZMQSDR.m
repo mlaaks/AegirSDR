@@ -5,7 +5,7 @@
 
 classdef CZMQSDR < matlab.System
     properties %(Access = private)
-      CenterFrequency = 95.5e6;;
+      CenterFrequency = 94e6;;
       IPAddress ='127.0.0.1'; %'127.0.0.1', 5555
       Port = '5555';
       ControlPort = '5556';

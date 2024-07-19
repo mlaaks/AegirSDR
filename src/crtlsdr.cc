@@ -1,18 +1,27 @@
 /*
 AegirSDR
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+MIT License
 
-coherent-rtlsdr is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Copyright (c) 2024 Mikko Laakso
 
-You should have received a copy of the GNU General Public License
-along with AegirSDR.  If not, see <https://www.gnu.org/licenses/>.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "crtlsdr.h"		
@@ -136,7 +145,7 @@ int crtlsdr::open(uint32_t index){
 	if (ret!=0) return ret;
 	ret = set_agc_mode(enableagc);
 	if (ret!=0) return ret;
-	ret = set_tuner_gain_mode(1);
+	ret = set_tuner_gain_mode(0);
 	if (ret!=0) return ret;
 	ret = set_tuner_gain(rfgain);
 	if (ret!=0) return ret;
@@ -287,9 +296,6 @@ void crefsdr::start(barrier *b){
 }
 
 void crefsdr::set_reference_noise_state(bool state){
-
-	//debug
-	std::cout << "Noise source state " << std::to_string(state) << std::endl;
 	rtlsdr_set_bias_tee_gpio(dev, 0, state ? 1 : 0); //KrakenSDR bias_tee GPIO on device 0, GPIO0 controls the noise source
 }
 
