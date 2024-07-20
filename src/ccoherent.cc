@@ -239,13 +239,17 @@ void ccoherent::threadf(ccoherent *ctx){
 			};
 		}
 		if (allsynced){
-			
+			int c=1;
 			for(auto *d:*ctx->devices){
 				d->read();
+				if(d->is_ready()){
+				d->convtofloat();
 				d->phasecorrect();
 				d->transport->write(c,d->get_readcntbuf(),d->get_samplepointer());
 				d->transport->writedebug(c,d->get_phasecorrect());
+				c++;
 				d->consume();
+				}
 			}
 		}
 		else{

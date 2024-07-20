@@ -8,7 +8,7 @@
 clear all;close all;
 
 sdr = CZMQSDR('IPAddress','127.0.0.1');
-FESR = 200e6;
+FESR = 240e3;
 NDEC = 5;
 nSample = 2^16;
 scope = dsp.SpectrumAnalyzer(...
@@ -18,13 +18,13 @@ scope = dsp.SpectrumAnalyzer(...
     'FrequencySpan',    'Full', ...
     'SampleRate',        FESR, ...
     'YLimits',          [-50,5],...
-    'SpectralAverages', 15, ...
+    'SpectralAverages', 100, ...
     'FrequencySpan',    'Start and stop frequencies', ...
     'StartFrequency',   -FESR/2, ...
     'StopFrequency',    FESR/2);
 
 addpath('/u/53/laaksom17/unix/source/SoftGNSS');
-addpath('/u/53/laaksom17/unix/source/SoftGNSS/geoFunctions');
+addpath('/u/53/laaksom17/unix/source/SoftGN94SS/geoFunctions');
 addpath('/u/53/laaksom17/unix/source/SoftGNSS/include');
 
 settings=initSettings();
@@ -36,7 +36,7 @@ L1frequency=1575.42e6;
 sdr();
 %sdr.CenterFrequency = L1frequency+settingsettingss.IF;
 %fname = 'iq.bin';
-sdr.CenterFrequency = 934e6; %91.9e6;% -40e3;
+sdr.CenterFrequency = 106e6; %91.9e6;% -40e3;
 
 sdr();
 %delete(fname);
@@ -52,12 +52,12 @@ while 1
     %acqResults = acquisition(data.', (settings);
     %z = fmdemod(y,Fc,fscanf3e6,75000)
     %x = resample(x,FESR,240000);
-    s = x(2:end,2);
-    sd = x(1:end-1,2);
+    s = x(2:end,1);
+    sd = x(1:end-1,1);
 
- %   desic = angle(s.*conj(sd));
-  %  desic = resample(desic,1,NDEC);
-   % hAudio(desic-mean(desic));
+    desic = angle(s.*conj(sd));
+    desic = resample(desic,1,NDEC);
+    hAudio(desic-mean(desic));
 end
 
 release(sdr);
