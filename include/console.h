@@ -39,6 +39,7 @@ SOFTWARE.
 
 #include <zmq.hpp>
 #include "csdrdevice.h"
+#include "chackrf.h"
 #include "common.h"
 
 #include "crefnoise.h"
@@ -54,7 +55,7 @@ enum command_code{
 	help,
 	samplerate,
 	status,
-	list,
+	lists,
 	nop,
 	logs,
 	quit,
@@ -70,7 +71,7 @@ const static std::unordered_map<std::string,int> command_codes{
 	{"help",help},
 	{"samplerate",samplerate},
 	{"status",status},
-	{"list",list},
+	{"lists",lists},
 	{"nop",nop},
 	{"log",logs},
 	{"quit",quit},
@@ -90,7 +91,7 @@ class cconsole{
 private:
 	barrier *startbarrier;
 	int *stderr_pipe;
-	crefsdr *refdev;
+	csdrdevice *refdev;
 	std::thread thread;
 	static void consolethreadf(cconsole *);
 
@@ -102,6 +103,7 @@ public:
 
 	std::atomic<bool> do_exit;
 	cconsole(int p[2],crefsdr *refdev_, lvector<csdrdevice*> *devvec_,crefnoise * refnoise_);
+	cconsole(int p[2],chackrfref *refdev_, lvector<csdrdevice*> *devvec_,crefnoise * refnoise_);
 	~cconsole();
 	void start();
 

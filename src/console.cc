@@ -132,6 +132,15 @@ cconsole::cconsole(int pipe[2],crefsdr* refdev_,lvector<csdrdevice*> *devvec_,cr
 	exit_console=false;
 }
 
+cconsole::cconsole(int pipe[2],chackrfref* refdev_,lvector<csdrdevice*> *devvec_,crefnoise * refnoise_): thread(){
+	refdev =refdev_;
+	devices=devvec_;
+	stderr_pipe = pipe;
+	refnoise = refnoise_;
+	do_exit=false;
+	exit_console=false;
+}
+
 cconsole::~cconsole(){
 	if (thread.joinable()) thread.join();
 }
@@ -404,7 +413,7 @@ void cconsole::consolethreadf(cconsole *ctx)
 			case status:
 				ctx->cmdstatus(options);
 			break;
-			case list:
+			case lists:
 				ctx->cmdlist(options);
 			break;
 			case logs:

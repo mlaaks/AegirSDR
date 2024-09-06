@@ -25,11 +25,11 @@ SOFTWARE.
 */
 
 /*
-The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functions.
+The chackrf class inheriting the virtual base class. Accesses librtlsdr C functions.
 */
 
 #pragma once
-#include <rtl-sdr.h>
+#include <libhackrf/hackrf.h>
 #include <chrono>
 #include <iostream>
 #include <cstring>
@@ -41,29 +41,29 @@ The crtlsdr class inheriting the virtual base class. Accesses librtlsdr C functi
 #include "csdrdevice.h"
 
 
-class crtlsdr: public csdrdevice{
+class chackrf: public csdrdevice{
 	uint32_t	 	devnum;
 	uint32_t		rfgain;
 	bool			enableagc;
 	
-	static void 	asynch_callback(unsigned char *buf, uint32_t len, void *ctx);
+	static int  	asynch_callback(hackrf_transfer* transfer);
 
 	int8_t	 		*swapbuffer(uint8_t *b);
 	uint32_t		asyncbufn;
 
 protected:
-	rtlsdr_dev_t	*dev;
+	hackrf_device	*dev;
     cbuffer         s8bit;
-	static void 	asynch_threadf(crtlsdr *d);
+	static void 	asynch_threadf(chackrf *d);
 	
 public:
 	barrier			*startbarrier;
 	static uint32_t get_device_count();
 
-	static std::string get_device_name(uint32_t index);
-	static int         get_index_by_serial(std::string serial);
-	static std::string get_device_serial(uint32_t index);
-	static std::string get_usb_str_concat(uint32_t index);
+	//static std::string get_device_name(uint32_t index);
+	//static int         get_index_by_serial(std::string serial);
+	//static std::string get_device_serial(uint32_t index);
+	//static std::string get_usb_str_concat(uint32_t index);
 
 	int open(uint32_t index);
 	int open(std::string name);
@@ -75,7 +75,6 @@ public:
 	int set_agc_mode(bool flag);
 	int set_tuner_gain(int gain);
 	uint32_t get_tuner_gain();
-
 	int set_if_gain(int gain);
 	uint32_t get_if_gain();
 
@@ -84,7 +83,6 @@ public:
 	int set_tuner_gain_mode(int mode);
 
 	int set_correction_f(float f);
-
 	void set_bias_tee_state(uint32_t,bool);
 
 	uint32_t get_asyncbufn(){return asyncbufn;};
@@ -107,11 +105,12 @@ public:
 	int8_t *read();
 	void consume(){s8bit.consume();};
 
-	crtlsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : csdrdevice(blocksize_,samplerate_,fcenter_), s8bit(asyncbufn_,blocksize_){
+	chackrf(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : csdrdevice(blocksize_,samplerate_,fcenter_), s8bit(asyncbufn_,blocksize_){
 		asyncbufn = asyncbufn_;
 		rfgain    = 0;
 	};
-	~crtlsdr(){
+	~chackrf(){
+		hackrf_exit();
 	};
 };
 
@@ -121,7 +120,7 @@ The crefsdr class. In this implementation, the reference channel is a special ca
 the original coherent-rtlsdr was not use for signals. I.e., it only captured the common refecence noise
 */
 
-class crefsdr: public crtlsdr{
+class chackrfref: public chackrf{
 	/*needed for overloading in case of reference channel. this just places the data in the second half of the buffer.
 	  This is a trick for frequency domain (circular) cross-correlation, which saves some CPU cycles.
 	*/
@@ -133,5 +132,5 @@ public:
 	void set_reference_noise_state(bool state);
 	void set_bias_tee_state(uint32_t channel,bool state);
 
-	crefsdr(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : crtlsdr(asyncbufn_,blocksize_,samplerate_,fcenter_){};
+	chackrfref(uint32_t asyncbufn_,uint32_t blocksize_,uint32_t samplerate_, uint32_t fcenter_) : chackrf(asyncbufn_,blocksize_,samplerate_,fcenter_){};
 };

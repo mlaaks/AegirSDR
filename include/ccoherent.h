@@ -52,7 +52,7 @@ private:
 	static void threadf(ccoherent *);
 
 	lvector<csdrdevice *> *devices;
-	crefsdr *refdev;
+	csdrdevice *refdev;
 
 	ctransport *transport;
 
@@ -73,7 +73,7 @@ private:
 public:
 
 	std::atomic<bool> do_exit;
-	ccoherent(crefsdr*,lvector<csdrdevice*> *,crefnoise*, int nfft);
+	ccoherent(csdrdevice*,lvector<csdrdevice*> *,crefnoise*, int nfft);
 	~ccoherent();
 	void start();
 	void request_exit();

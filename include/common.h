@@ -30,14 +30,43 @@ SOFTWARE.
 #include "cdsp.h"
 
 #include <vector>
+#include <string>
 #include <iterator>
 #include <cstring> //std::memset
 #include <queue>
+#include <string>
 
 //#define USELIBRTLSDRBUFS //Move this to CMake, D_USE_LIBRTLBUFS
 /*
     TODO: Edit the code to common.cc files from header files
 */
+
+//commandline ops struct:
+class cl_ops{
+    public:
+        std::string  refname;
+        bool         agc;
+        uint32_t     fs;
+        uint32_t     fc;
+        uint32_t     asyncbufn;
+        uint32_t     blocksize;
+        int          ndev;
+        uint32_t     gain;
+        uint32_t     refgain;
+        bool         no_header;
+        std::string  config_fname;
+        bool         use_cfg;
+        bool         quiet;
+        bool         rowmajor;        // mostly for GNU Radio ZMQ source.
+        bool         use32bitfloat; // e.g. gr_complex, std::complex<float>, interleaved 32bit float
+        bool         krakensdr;
+        bool         krakenbiastee;
+        bool         HackRF;
+        bool         daemon;
+};
+
+//yaml based config file interface:
+std::vector<std::string> readyaml(cl_ops *ops, std::string fname);
 
 const float sync_threshold=0.01; //EDITED for Kraken. Fix this to read the value from .conf file
 

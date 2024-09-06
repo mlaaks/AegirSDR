@@ -34,16 +34,17 @@ SOFTWARE.
 #include <stdio.h>
 #include <fcntl.h>
 #include <mutex>
-#include <Python.h>
+#include <yaml.h>
 
 #include "csdrdevice.h"
 #include "crtlsdr.h"
+#include "chackrf.h"
 #include "console.h"
 #include "ccoherent.h"
 #include "ctransport.h"
+#include "ctransportsoapy.h"
 #include "common.h"
 #include "crefnoise.h"
-#include "cconfigfile.h"
 #include "cdsp.h"
 
 using namespace std;
@@ -76,26 +77,6 @@ void redir_stderr(bool topipe){
 	//freopen ("stderrlog","w",stderr); //redirect to a file...
 }
 
-struct cl_ops{
-	string   refname;
-	bool     agc;
-	uint32_t fs;
-	uint32_t fc;
-	uint32_t asyncbufn;
-	uint32_t blocksize;
-	int		 	 ndev;
-	uint32_t gain;
-	uint32_t refgain;
-	bool		 no_header;
-	string 	 config_fname;
-	bool	 	 use_cfg;
-	bool	 	 quiet;
-	bool		 rowmajor;		  // mostly for GNU Radio ZMQ source.
-	bool		 use32bitfloat; // e.g. gr_complex, std::complex<float>, interleaved 32bit float
-	bool		 krakensdr;
-	bool		 krakenbiastee;
-};
-
 void usage(void)
 {
 	fprintf(stderr,
@@ -116,13 +97,15 @@ void usage(void)
 		"\t[-w wireformat: 8 or 32 [int8 (default) or complex<float> (32 bit)]\n"
 		"\t[-m memorylayout (for transport): row-major [default: column-major]\n"
 		"\t[-K KrakenSDR device support (experimental)\n"
-		"\t[-B KrakenSDR enable bias tees\n");
+		"\t[-B KrakenSDR enable bias tees\n"
+		"\t[-H use HackRF\n"
+		"\t[-D Daemon mode for SoapySDR support\n");
 	exit(1);
 }
 
 int parsecommandline(cl_ops *ops, int argc, char **argv){
 	int opt;
-	while ((opt = getopt(argc, argv, "s:b:f:h:n:g:r:I:C:w:mARqKB")) != -1) {
+	while ((opt = getopt(argc, argv, "s:b:f:h:n:g:r:I:C:w:mARqKBDH")) != -1) {
 		switch (opt) {
 			case 's':
 					ops->fs=(uint32_t)atof(optarg);
@@ -182,8 +165,14 @@ int parsecommandline(cl_ops *ops, int argc, char **argv){
 			case 'K':
 					ops->krakensdr=true;
 				break;
+			case 'H':
+					ops->HackRF=true;
+				break;
 			case 'B':
 					ops->krakenbiastee=true;
+				break;
+			case 'D':
+					ops->daemon = true;
 				break;
 			default:
 					usage();
@@ -193,30 +182,35 @@ int parsecommandline(cl_ops *ops, int argc, char **argv){
 	return 0;
 };
 
+struct sdrdefs {
+	uint32_t devindex;
+	string   serial;
+};
+
 int main(int argc, char **argv)
 {
 
-	int nfftqueue = 8;
+	int nfftqueue = 8; //limits the number of simultaneous fft -tickets
 	crefnoise * refnoise;
 
-	cl_ops   ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,100,100,false,"",false,false,false,false,false,false};
-	ops.ndev = crtlsdr::get_device_count();
-	cout << to_string(ops.ndev) << " devices found." << endl;
+	struct cl_ops ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,100,100,false,"",false,false,false,false,false,false,false,false};
+
 	parsecommandline(&ops,argc,argv);
 
-	cout << "ops parsed\n"<< endl;
+	if (ops.HackRF){
+		ops.ndev = chackrf::get_device_count();
+	}
+	else{
+		ops.ndev = crtlsdr::get_device_count();
+	}
+	cout << to_string(ops.ndev) << " devices found." << endl;
+
 	if (ops.no_header){
 		cout << "streaming in raw mode" << endl;
 	}
 	if (ops.krakensdr){
 		ops.refname="1000";
 	}
-
-	if (crtlsdr::get_index_by_serial(ops.refname)<0){
-		cout << "reference '"<< ops.refname <<"' not found, exiting" << endl;
-		exit(1);
-	};
-
 
 	{
 		barrier *startbarrier;
@@ -236,80 +230,185 @@ int main(int argc, char **argv)
 		std::signal(SIGUSR1,int_handler);
 
 		lvector<csdrdevice *> v_devices;
-
-		cout << "Using cdsp implementation & version " << cdsp::implementation() << " " << cdsp::version() << endl;
-		
-		//read device order from config file, if not given, build order by device index:
 		std::vector<sdrdefs> vdefs;
-		if (ops.use_cfg){
-			cout << "Reading config " << ops.config_fname << endl;
-			vdefs = cconfigfile::readconfig(ops.config_fname);
-			ops.ndev = vdefs.size();
-			ops.refname = cconfigfile::get_refname(vdefs);
+
+		vector<string> signaldevices;
+		if (ops.HackRF){
+			signaldevices = readyaml(&ops,std::string("confighackrf.yml"));
 		}
 		else{
-			uint32_t refindex = crtlsdr::get_index_by_serial(ops.refname);
-			for(uint32_t n=0;n<ops.ndev;n++){
-				sdrdefs d;
-				d.devindex=n;
-				d.serial  = crtlsdr::get_device_serial(n);
-				if (n!=refindex)
-					vdefs.push_back(d);
+			signaldevices = readyaml(&ops,std::string("config.yml"));
+		}
+
+		cout << "Using cdsp implementation & version " << cdsp::implementation() << " " << cdsp::version() << endl;			
+
+
+		if (ops.HackRF){
+
+			ops.blocksize=262144; //HackRF defaults to blocksize 2^18
+			ctransport *transport;
+			if(ops.daemon){
+				transport= (ctransport *) (ctransportsoapy::init(signaldevices.size(),ops.blocksize));
+			}
+			else{
+				transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,signaldevices.size(),ops.blocksize);
 			}
 
-		}
-		//std::cout << "device vector has " << std::to_string(v_devices.size()) << std::endl;
-		ctransport *transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
-
-		crefsdr* ref_dev = new crefsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
-
-		if (ref_dev->open(ops.refname)){
-			cout << "could not open reference device, serial number:'" << ops.refname << "'" << endl;
-			exit(1);
-		}
-		ref_dev->set_agc_mode(ops.agc);
-
-		ref_dev->set_transport(transport);
-		if (ops.krakenbiastee){
-			cout << "Enable KrakenSDR bias tees (all for now)" << endl;
-			ref_dev->set_bias_tee_state(0,true);
-			ref_dev->set_bias_tee_state(1,true);
-			ref_dev->set_bias_tee_state(2,true);
-			ref_dev->set_bias_tee_state(3,true);
-			ref_dev->set_bias_tee_state(4,true);
-		}
-		else{
-			cout << "Disable KrakenSDR bias tees (all for now)" << endl;
-			ref_dev->set_bias_tee_state(0,false);
-			ref_dev->set_bias_tee_state(1,false);
-			ref_dev->set_bias_tee_state(2,false);
-			ref_dev->set_bias_tee_state(3,false);
-			ref_dev->set_bias_tee_state(4,false);
-		}
-
-		if (ops.krakensdr){
-			refnoise = new crefnoise(ref_dev);
-		}
-		else{
-			refnoise = new crefnoise("/dev/ttyACM0");
-		}
-
-		for (auto n: vdefs){
-			v_devices.push_back(new crtlsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc)); //this must be made std::unique_ptr or std::shared_ptr...
-			if (v_devices.back()->open(n.serial)){
-				delete v_devices.back(); //opening the signaldevice failed
-				v_devices.pop_back();
+			chackrfref *ref_dev = new chackrfref(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
+			if (ref_dev->open(ops.refname)){
+				cout << "could not open reference device, serial number:" << ops.refname << "'" << endl;
+				exit(1);
 			}
-			else
-			{
-				v_devices.back()->set_agc_mode(ops.agc); //openin signaldevice succeeded
-				v_devices.back()->set_transport(transport);
+			else{
+				cout << "opened reference device:" << ops.refname << endl;
+				ref_dev->set_transport(transport);
 			}
-		}
 
-		refnoise->set_state(true);		
+			for(auto dev:signaldevices){
+				if (ops.refname.compare(dev)){
+					v_devices.push_back(new chackrf(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc)); //this must be made std::unique_ptr or std::shared_ptr...
+						if (v_devices.back()->open(dev)){
+							cout << "Open:" << dev << " failed"<<endl;
+							delete v_devices.back(); //opening the signaldevice failed
+							v_devices.pop_back();
+						}
+					else
+					{
+						cout<<"opened: "<< dev<<endl;
+						v_devices.back()->set_transport(transport);
+					}
+				}
+			}
+			startbarrier = new barrier(v_devices.size()+1);
 		
-		startbarrier = new barrier(v_devices.size()+1);
+			ref_dev->start(startbarrier);
+		
+			for (auto d : v_devices){
+				d->start(startbarrier);
+			}
+
+			if (ops.krakensdr){
+				//refnoise = new crefnoise(ref_dev);
+			}
+			else{
+				refnoise = new crefnoise("/dev/ttyACM0");
+			}
+
+			cconsole console(stderr_pipe,ref_dev, &v_devices,refnoise);
+		
+			console.start();
+
+			ccoherent coherent(ref_dev,&v_devices, refnoise, nfftqueue);
+			coherent.start();
+					
+			while(!exit_all){
+				transport->send(); //main thread just waits on data and publishes when available.
+			}
+
+			coherent.request_exit(); 
+			coherent.join();
+			ref_dev->stop();
+			ref_dev->request_exit();
+			ref_dev->close();
+
+			for (auto d : v_devices){
+				d->stop();
+				d->request_exit();
+			}
+
+			console.request_exit();
+
+			for (auto d : v_devices){
+				d->close();
+			}
+
+			console.join();
+
+			if (ops.quiet){
+				std::cerr.rdbuf( old );
+				close(stderr_pipe[0]);
+			}
+			
+			delete startbarrier;
+			delete ref_dev;
+			delete refnoise;
+			ctransport::cleanup();
+
+
+
+		}
+		else
+		{
+			int refindex = crtlsdr::get_index_by_serial(ops.refname);
+			if (refindex<0){
+				cout << "reference '"<< ops.refname <<"' not found, exiting" << endl;
+				exit(1);
+			};
+
+			for(auto dev:signaldevices){
+				cout << dev << endl;
+				int index=crtlsdr::get_index_by_serial(dev.data());
+				sdrdefs d;
+				if(index!=refindex){
+					d.devindex=index;
+					d.serial = dev;
+					vdefs.push_back(d);
+				}
+			}
+			
+			ctransport *transport;
+			if(ops.daemon){
+				transport= (ctransport *) (ctransportsoapy::init(vdefs.size()+1,ops.blocksize));
+			}
+			else{
+				transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
+			}
+			crefsdr* ref_dev = new crefsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
+
+			if (ref_dev->open(ops.refname)){
+				cout << "could not open reference device, serial number:'" << ops.refname << "'" << endl;
+				exit(1);
+			}
+			ref_dev->set_agc_mode(ops.agc);
+
+			ref_dev->set_transport(transport);
+			if (ops.krakenbiastee){
+				cout << "Enable KrakenSDR bias tees (all for now)" << endl;
+				ref_dev->set_bias_tee_state(0,true);
+				ref_dev->set_bias_tee_state(1,true);
+				ref_dev->set_bias_tee_state(2,true);
+				ref_dev->set_bias_tee_state(3,true);
+				ref_dev->set_bias_tee_state(4,true);
+			}
+			else{
+				cout << "Disable KrakenSDR bias tees (all for now)" << endl;
+				ref_dev->set_bias_tee_state(0,false);
+				ref_dev->set_bias_tee_state(1,false);
+				ref_dev->set_bias_tee_state(2,false);
+				ref_dev->set_bias_tee_state(3,false);
+				ref_dev->set_bias_tee_state(4,false);
+			}
+
+			if (ops.krakensdr){
+				refnoise = new crefnoise(ref_dev);
+			}
+			else{
+				refnoise = new crefnoise("/dev/ttyACM0");
+			}
+
+			for (auto n: vdefs){
+				v_devices.push_back(new crtlsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc)); //this must be made std::unique_ptr or std::shared_ptr...
+				if (v_devices.back()->open(n.serial)){
+					delete v_devices.back(); //opening the signaldevice failed
+					v_devices.pop_back();
+				}
+				else
+				{
+					v_devices.back()->set_agc_mode(ops.agc); //openin signaldevice succeeded
+					v_devices.back()->set_transport(transport);
+				}
+			}
+					startbarrier = new barrier(v_devices.size()+1);
 		
 		ref_dev->start(startbarrier);
 		
@@ -356,6 +455,8 @@ int main(int argc, char **argv)
 		delete ref_dev;
 		delete refnoise;
 		ctransport::cleanup();
+		}
+
 	}
-	return 1;
+	return 0;
 }

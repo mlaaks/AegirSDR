@@ -24,48 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "crtlsdr.h"		
+#include "chackrf.h"		
 #include "common.h"
 #include <unistd.h>
 #include <csignal>
 
 
-void crtlsdr::start(barrier *b){
+void chackrf::start(barrier *b){
 	startbarrier = b;
 	streaming = true;
-	thread = std::thread(crtlsdr::asynch_threadf,this);
+	thread = std::thread(chackrf::asynch_threadf,this);
 	startcontrol();
 }
 
-void crtlsdr::startcontrol(){
+void chackrf::startcontrol(){
 	controller->start();
 }
 
-void crtlsdr::stop(){
+void chackrf::stop(){
 	streaming = false;
 	cv.notify_all();
 	controller->request_exit();
 	std::raise(SIGUSR1);
 }
 
-void crtlsdr::asynch_threadf(crtlsdr *d){
+void chackrf::asynch_threadf(chackrf *d){
 	int ret;
-	std::cout << "starting #" << std::to_string(d->devnum) <<", asyncbufn:" << std::to_string(d->get_asyncbufn()) << std::endl;
+	//std::cout << "starting #" << std::to_string(d->devnum) <<", asyncbufn:" << std::to_string(d->get_asyncbufn()) << std::endl;
 	
 	d->startbarrier->wait();
-	
-	ret = rtlsdr_reset_buffer(d->dev);
-	if (ret<0){
-		std::cerr << "rtlsdr_reset_buffer failed for#" << std::to_string(d->devnum) << std::endl;
-	}
-
-	ret = rtlsdr_read_async(d->dev,crtlsdr::asynch_callback, (void *)d, d->asyncbufn, d->blocksize);
-	if (ret<0){
-		std::cerr << "rtlsdr_read_async failed for #" << std::to_string(d->devnum) << std::endl;
-	}
-	else{
-		std::cerr << "asynch_thread #" << std::to_string(d->devnum) << " exited" << std::endl;
-	}
+	hackrf_start_rx(d->dev, chackrf::asynch_callback, (void*) d);
+	std::cout << "starting #" << std::to_string(d->devnum) <<", asyncbufn:" << std::to_string(d->get_asyncbufn()) << std::endl;
 }
 
 /*
@@ -73,29 +62,59 @@ void crtlsdr::asynch_threadf(crtlsdr *d){
  * Due to incomplete concurrency implementation, cancel_async should
  * only be called from within the callback function, so it is
  * in the correct thread.*/
+/*
+int rx_callback(hackrf_transfer* transfer){
+    //fprintf(stderr,"Read %d bytes\n",transfer->valid_length);
+    pthread_mutex_lock(&mutex);
+    bytes_read+=transfer->valid_length;
+    memcpy(b0,transfer->buffer,transfer->valid_length);
+    w0=transfer->valid_length;
 
-void crtlsdr::asynch_callback(unsigned char *buf, uint32_t len, void *ctx)
+    uint32_t tw=w0;
+    w0 = w1;
+    w1 = tw;
+
+    int8_t *tmp = b0;
+    b0 = b1;
+    b1 = tmp;
+
+    pthread_mutex_unlock(&mutex);
+
+    return 0;
+}*/
+
+int chackrf::asynch_callback(hackrf_transfer* transfer)
 {
-	crtlsdr *d = (crtlsdr *)ctx;
+	chackrf *d = (chackrf *)transfer->rx_ctx;
+	//std::cout << "receiving" << std::to_string(d->devnum) << " length:"<< std::to_string(transfer->valid_length)<<std::endl;
 	
-	if (ctx) {
+	if (d) {
 		
 		if (d->exit_requested()){
-			rtlsdr_cancel_async(d->dev);
+			hackrf_stop_rx(d->dev);
+			std::cout<<"stoping streaming"<<std::endl;
 		}
 
-		d -> swapbuffer(buf);
+		d -> swapbuffer(transfer->buffer);
 	}
+	return 0;
 }
 
-uint32_t crtlsdr::get_device_count(){
-	return rtlsdr_get_device_count();
+uint32_t chackrf::get_device_count(){
+	hackrf_device_list_t *dl;
+    int ret = hackrf_init();
+    if (!ret){
+	    dl = hackrf_device_list();
+	    ret = dl->devicecount;
+	    hackrf_device_list_free(dl);
+	}
+	return ret;
 }
-
-std::string crtlsdr::get_device_name(uint32_t index){
-	return rtlsdr_get_device_name(index);
-}
-
+/*
+std::string chackrf::get_device_name(uint32_t index){
+	return std::string("0");
+}*/
+/*
 int crtlsdr::get_index_by_serial(std::string serial){
 	return rtlsdr_get_index_by_serial(serial.data());
 }
@@ -125,60 +144,44 @@ std::string crtlsdr::get_usb_str_concat(uint32_t index){
 
 	return std::string(serial) +" : " + std::string(product) + " : " + std::string(manufact);
 }
-
-int crtlsdr::open(std::string name){		
-
-	return open(crtlsdr::get_index_by_serial(name.data()));
+*/
+int chackrf::open(uint32_t n){
+	return 0;
 }
+int chackrf::open(std::string name){
+	int ret = hackrf_open_by_serial(name.data(),&dev);
+	if (ret!=0) return ret;
+	ret=set_samplerate(samplerate);
+	if (ret!=0) return ret;
+	ret=set_fcenter(fcenter);
 
-int crtlsdr::open(uint32_t index){
-
-	int ret;
-	devnum = index;
-	ret = rtlsdr_open(&dev,index);
-	if (ret!=0) return ret;
-	ret = set_samplerate(samplerate);
-	if (ret!=0) return ret;
-	ret = rtlsdr_set_dithering(dev, 0);  //THIS MUST PRECEDE THE TUNING FREQ CALL, OTHERWISE IT WILL FAIL!
-	if (ret!=0) return ret;
-	ret = set_fcenter(fcenter);
-	if (ret!=0) return ret;
-	ret = set_agc_mode(enableagc);
-	if (ret!=0) return ret;
-	ret = set_tuner_gain_mode(0);
-	if (ret!=0) return ret;
-	ret = set_tuner_gain(rfgain);
-	if (ret!=0) return ret;
-	ret = set_correction_f(0.0f);  //this must be zeroed. value is retained after close.
-
-	devname = crtlsdr::get_device_serial(devnum);
 	return ret;
 }
 
-int crtlsdr::close(){
-	return rtlsdr_close(dev);
+int chackrf::close(){
+	hackrf_close(dev);
+	dev = NULL;
 }
 
 
-int crtlsdr::set_fcenter(uint32_t f){
+int chackrf::set_fcenter(uint32_t f){
 	fcenter=f;
-	rtlsdr_set_dithering(dev, 0);
-	return rtlsdr_set_center_freq(dev,fcenter);
+	return hackrf_set_freq(dev,f);
 }
 
-int crtlsdr::set_samplerate(uint32_t fs){
+int chackrf::set_samplerate(uint32_t fs){
 	samplerate = fs;
-	return rtlsdr_set_sample_rate(dev,fs);
+	return hackrf_set_sample_rate(dev,fs);
 }
 
-int crtlsdr::set_agc_mode(bool flag){
-	return rtlsdr_set_agc_mode(dev, (flag) ? 1 : 0);
+int chackrf::set_agc_mode(bool flag){
+	return 0;
 }
 
-int crtlsdr::set_tuner_gain(int gain){
+int chackrf::set_tuner_gain(int gain){
 	rfgain = gain;
 	//cout << "Trying to set tuner gain " << to_string(devnum) << endl;
-	return rtlsdr_set_tuner_gain(dev, gain);
+	//return rtlsdr_set_tuner_gain(dev, gain);
 }
 
 /*!
@@ -194,15 +197,15 @@ int crtlsdr::set_tuner_gain(int gain){
  */
 
 
-int crtlsdr::set_tuner_gain_ext(int lna_gain, int mixer_gain, int vga_gain){
-	return rtlsdr_set_tuner_gain_ext(dev,lna_gain, mixer_gain, vga_gain);
+int chackrf::set_tuner_gain_ext(int lna_gain, int mixer_gain, int vga_gain){
+	return 0;
 }
 
-uint32_t crtlsdr::get_tuner_gain(){
-	return rtlsdr_get_tuner_gain(dev);
+uint32_t chackrf::get_tuner_gain(){
+	return 0;
 }
 
-uint32_t crtlsdr::get_if_gain(){
+uint32_t chackrf::get_if_gain(){
 	return 0; //no such function in rtl_sdr.h 
 }
 
@@ -229,20 +232,20 @@ uint32_t crtlsdr::get_if_gain(){
  * \return 0 on success
  */
 
-int crtlsdr::set_if_gain(int gain){
-	return rtlsdr_set_tuner_if_mode(dev, gain);
+int chackrf::set_if_gain(int gain){
+	return 0;
 }
 
-int crtlsdr::set_tuner_gain_mode(int mode){
-	return rtlsdr_set_tuner_gain_mode(dev, mode);
+int chackrf::set_tuner_gain_mode(int mode){
+	return 0;
 }
 
-int crtlsdr::set_correction_f(float f){
-	return ((dev!=NULL) && (!do_exit)) ? rtlsdr_set_sample_freq_correction_f(dev,f) : -1;
+int chackrf::set_correction_f(float f){
+	return 0;
 }
 
 
-int8_t* crtlsdr::swapbuffer(uint8_t *b){
+int8_t* chackrf::swapbuffer(uint8_t *b){
 
 	//do we need buffer timestamps like USRP/UHD devices do?
 
@@ -258,10 +261,12 @@ int8_t* crtlsdr::swapbuffer(uint8_t *b){
 		}
 	//}
 	cv.notify_all();
+	//std::cout << "swapbuffer" << std::endl;
+	
 	return s8bit.getbufferptr();
 }
 
-int8_t* crtlsdr::read(){
+int8_t* chackrf::read(){
 	if (streaming){
 		std::unique_lock<std::mutex> lock(mtx);
 		cv.wait(lock, [this]{return (newdata.load()>0);});
@@ -271,43 +276,37 @@ int8_t* crtlsdr::read(){
 	return s8bit.getbufferptr();
 }
 
-const std::complex<float> *crtlsdr::convtofloat(){
+const std::complex<float> *chackrf::convtofloat(){
 	return cdsp::convtofloat(sfloat,s8bit.getbufferptr(),blocksize);
 }
 
-const std::complex<float> *crtlsdr::convtofloat(const std::complex<float> *p){
+const std::complex<float> *chackrf::convtofloat(const std::complex<float> *p){
 	return cdsp::convtofloat(p,s8bit.getbufferptr(),blocksize);
 }
 
-void crtlsdr::set_bias_tee_state(uint32_t channel,bool state){
-	
+void chackrf::set_bias_tee_state(uint32_t channel,bool state){
+	int ret;
 }
 
-const std::complex<float> *crefsdr::convtofloat(){
+const std::complex<float> *chackrfref::convtofloat(){
 	cdsp::convtofloat(sfloat+(blocksize>>1),s8bit.getbufferptr(),blocksize);
 	return sfloat + (blocksize>>1);
 }
 
-const std::complex<float> *crefsdr::convtofloat(const std::complex<float> *p){
+const std::complex<float> *chackrfref::convtofloat(const std::complex<float> *p){
 	cdsp::convtofloat(p+(blocksize>>1),s8bit.getbufferptr(),blocksize);
 	return p + (blocksize >> 1);
 }
 
-void crefsdr::start(barrier *b){
+void chackrfref::start(barrier *b){
 	startbarrier = b;
-	thread = std::thread(crtlsdr::asynch_threadf,this);
+	thread = std::thread(chackrf::asynch_threadf,this);
 	streaming = true;
 }
 
-void crefsdr::set_reference_noise_state(bool state){
-	rtlsdr_set_bias_tee_gpio(dev, 0, state ? 1 : 0); //KrakenSDR bias_tee GPIO on device 0, GPIO0 controls the noise source
+void chackrfref::set_reference_noise_state(bool state){
 }
 
-
-void crefsdr::set_bias_tee_state(uint32_t channel,bool state){
+void chackrfref::set_bias_tee_state(uint32_t channel,bool state){
 	int ret;
-	ret = rtlsdr_set_bias_tee_gpio(dev, channel+1, state ? 1 : 0); //KrakenSDR GPIO:s on device 0, GPIO1-GPIO5 control the channel bias tees
-	if (ret){
-		cout << "Failed to set bias tee on channel " << to_string(channel) << endl; 
-	}
 }

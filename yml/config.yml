@@ -1,0 +1,26 @@
+id: AegirSDR
+label: Configuration
+category: '[AegirSDR]'
+
+parameters:
+- id: num_samples
+  label: vec_len
+  dtype: int
+  default: 8192
+- id: freq
+  label: Frequency [Hz]
+  dtype: real
+  default: 1575.42e6
+- id: samplerate
+  label: Frequency [Hz]
+  dtype: int
+  default: 2000000
+  #SDR devicestrings in order we want them to be evaluated
+  #referencedevice is a special case, but is also used for signals
+  #in Aegir
+- id: devices
+  referencedevice: '1000'
+  signaldevice1: '1001'
+  signaldevice2: '1002'
+  signaldevice3: '1003'
+  signaldevice4: '1004'

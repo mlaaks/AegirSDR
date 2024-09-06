@@ -36,11 +36,6 @@ configuration files. Change implementation to some INI-parser
 which supports Linux .conf files, even python will do.
 */
 
-struct sdrdefs {
-	uint32_t devindex;
-	string   serial;
-};
-
 class cconfigfile{
 public:
 	static std::vector<sdrdefs> readconfig(string fname) {

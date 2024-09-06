@@ -36,7 +36,7 @@ int uint32log2(uint32_t k){
 }
 #endif
 
-ccoherent::ccoherent(crefsdr* refdev_,lvector<csdrdevice*> *devvec_,crefnoise* refnoise_, int nfft_){
+ccoherent::ccoherent(csdrdevice* refdev_,lvector<csdrdevice*> *devvec_,crefnoise* refnoise_, int nfft_){
 	refdev =refdev_;
 	devices=devvec_;
 	refnoise=refnoise_;
@@ -237,6 +237,7 @@ void ccoherent::threadf(ccoherent *ctx){
 				allsynced=false;
 				break;
 			};
+			//ctx->refnoise->set_state(false);	
 		}
 		if (allsynced){
 			int c=1;

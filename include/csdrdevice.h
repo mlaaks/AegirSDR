@@ -131,6 +131,8 @@ public:
 	virtual void consume() = 0;
     virtual uint32_t get_readcntbuf()=0;
     virtual bool is_ready() = 0;
+    virtual uint32_t get_asyncbufn()=0;
+    virtual void set_bias_tee_state(uint32_t,bool)=0;
 
 	std::complex<float> est_phasecorrect(const std::complex<float> *ref);
 	std::complex<float> get_phasecorrect();

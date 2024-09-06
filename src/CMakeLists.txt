@@ -1,6 +1,6 @@
 project (AegirSDR)
 
-set(SOURCES main.cc csdrdevice.cc crtlsdr.cc console.cc ccoherent.cc cdsp.cc ccontrol.cc ctransport.cc common.cc)
+set(SOURCES main.cc csdrdevice.cc crtlsdr.cc chackrf.cc console.cc ccoherent.cc cdsp.cc ccontrol.cc ctransport.cc ctransportsoapy.cc common.cc yamlparser.cc)
 
 set(GPUFFT_DIR /opt/vc/src/hello_pi/hello_fft)
 
@@ -10,12 +10,6 @@ set(GPUFFT_SOURCES     ${GPUFFT_DIR}/mailbox.c
                        ${GPUFFT_DIR}/gpu_fft_twiddles.c
                        ${GPUFFT_DIR}/gpu_fft_shaders.c)
 
-find_package(Python COMPONENTS Interpreter Development)
-
-message("Python_FOUND:${Python_FOUND}")
-message("Python_VERSION:${Python_VERSION}")
-message("Python_Development_FOUND:${Python_Development_FOUND}")
-message("Python_LIBRARIES:${Python_LIBRARIES}")
 
 if (RASPBERRYPI)
 	include_directories(${GPUFFT_DIR})
@@ -24,9 +18,20 @@ if (RASPBERRYPI)
 	add_executable(AegirSDR ${SOURCES} ${GPUFFT_SOURCES})
 	target_link_libraries(AegirSDR zmq pthread fftw3f volk rtlsdr stdc++ dl rt)
 else (RASPBERRYPI)
-	include_directories(${Python_INCLUDE_DIRS})
-
+	
 	add_executable(AegirSDR ${SOURCES})
-	target_link_libraries(AegirSDR zmq pthread fftw3f volk rtlsdr stdc++ ${Python_LIBRARIES})
+	target_link_libraries(AegirSDR zmq pthread fftw3f volk rtlsdr hackrf stdc++ yaml-cpp)
+
+	add_custom_command(
+        TARGET AegirSDR POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/yml/config.yml
+                ${CMAKE_CURRENT_BINARY_DIR}/config.yml)
+        add_custom_command(
+        TARGET AegirSDR POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/yml/confighackrf.yml
+                ${CMAKE_CURRENT_BINARY_DIR}/confighackrf.yml)
+
 endif (RASPBERRYPI)
 
