@@ -42,7 +42,6 @@ SOFTWARE.
 #include "console.h"
 #include "ccoherent.h"
 #include "ctransport.h"
-#include "ctransportsoapy.h"
 #include "common.h"
 #include "crefnoise.h"
 #include "cdsp.h"
@@ -246,13 +245,7 @@ int main(int argc, char **argv)
 		if (ops.HackRF){
 
 			ops.blocksize=262144; //HackRF defaults to blocksize 2^18
-			ctransport *transport;
-			if(ops.daemon){
-				transport= (ctransport *) (ctransportsoapy::init(signaldevices.size(),ops.blocksize));
-			}
-			else{
-				transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,signaldevices.size(),ops.blocksize);
-			}
+			ctransport *transport = ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,signaldevices.size(),ops.blocksize);
 
 			chackrfref *ref_dev = new chackrfref(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
 			if (ref_dev->open(ops.refname)){
@@ -356,13 +349,7 @@ int main(int argc, char **argv)
 				}
 			}
 			
-			ctransport *transport;
-			if(ops.daemon){
-				transport= (ctransport *) (ctransportsoapy::init(vdefs.size()+1,ops.blocksize));
-			}
-			else{
-				transport=ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
-			}
+			ctransport *transport = ctransport::init("tcp://*:5555",ops.no_header,ops.rowmajor,ops.use32bitfloat,vdefs.size()+1,ops.blocksize);
 			crefsdr* ref_dev = new crefsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc);
 
 			if (ref_dev->open(ops.refname)){
