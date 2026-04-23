@@ -2,7 +2,11 @@
 
 Extended support for similar SDR platforms as in our previous _coherent-rtlsdr_ project. This includes e.g. KrakenSDR.
 One goal is to add support for SoapySDR API. By agreement of all the authors, we changed the licensing from GPL3 to the
-MIT license. Installation instructions are as follows:
+MIT license. The code repository is now public, but not yet advertised anywhere. Still have things to fix, many things have
+already been fixed - the code now exits cleanly.
+
+
+Installation instructions are as follows:
 
 # Get dependencies on debian:
 
