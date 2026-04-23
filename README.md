@@ -5,6 +5,9 @@ One goal is to add support for SoapySDR API. By agreement of all the authors, we
 MIT license. The code repository is now public, but not yet advertised anywhere. Still have things to fix, many things have
 already been fixed - the code now exits cleanly.
 
+The config files have now been changed to yaml syntax. Thus, the dependencies also include yaml-cpp, a thing that I regret.
+Probably I will get rid of that dependency and code a simple parser myself.
+
 
 Installation instructions are as follows:
 
