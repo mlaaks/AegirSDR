@@ -9,7 +9,18 @@
 using namespace std;
 vector<string> readyaml(cl_ops *ops,std::string fname)
 {
-   YAML::Node node = YAML::LoadFile(fname.data());
+   YAML::Node node;
+   try {
+      node = YAML::LoadFile(fname);
+   } catch (const YAML::BadFile &) {
+      std::string alt = "yml/" + fname;
+      try {
+         node = YAML::LoadFile(alt);
+      } catch (const YAML::BadFile &) {
+         std::cerr << "Cannot open config file: tried '" << fname << "' and '" << alt << "'" << std::endl;
+         exit(1);
+      }
+   }
    YAML::Node nparameters = node["parameters"];
    YAML::Node nodechild = nparameters["id"];
    //cout << nparameters <<endl;
@@ -29,7 +40,7 @@ vector<string> readyaml(cl_ops *ops,std::string fname)
    signaldevices.push_back(nparameters[3]["signaldevice1"].as<string>());
    signaldevices.push_back(nparameters[3]["signaldevice2"].as<string>());
    signaldevices.push_back(nparameters[3]["signaldevice3"].as<string>());
-   //signaldevices.push_back(nparameters[3]["signaldevice4"].as<string>());
+   signaldevices.push_back(nparameters[3]["signaldevice4"].as<string>());
    
    ops->blocksize=nsamples*2; //I&Q parts interleaved,hence *2
    ops->fc = fcenter;

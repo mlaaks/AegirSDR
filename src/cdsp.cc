@@ -53,7 +53,7 @@ const std::complex<float>* cdsp::convtofloat(const std::complex<float> *out, con
 }
 
 const std::complex<float>* cdsp::scalarmul(const std::complex<float> *out,const std::complex<float> *in,const std::complex<float> scalar_in, int n){
-	volk_32fc_s32fc_multiply_32fc((lv_32fc_t *) out,(lv_32fc_t*) in,scalar_in,n);
+	volk_32fc_s32fc_multiply2_32fc((lv_32fc_t *) out,(lv_32fc_t*) in,(const lv_32fc_t*) &scalar_in,n);
 	return out;
 }
 

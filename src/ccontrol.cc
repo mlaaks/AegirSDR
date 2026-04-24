@@ -53,6 +53,7 @@ void ccontrol::start(){
 
 void ccontrol::request_exit(){
 	do_exit=true;
+	dev->set_synchronized(false); // wake wait_synchronized() so the thread can see do_exit
 }
 
 void ccontrol::join(){

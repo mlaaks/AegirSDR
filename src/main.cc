@@ -232,11 +232,14 @@ int main(int argc, char **argv)
 		std::vector<sdrdefs> vdefs;
 
 		vector<string> signaldevices;
-		if (ops.HackRF){
-			signaldevices = readyaml(&ops,std::string("confighackrf.yml"));
+		if (ops.use_cfg){
+			signaldevices = readyaml(&ops, ops.config_fname);
+		}
+		else if (ops.HackRF){
+			signaldevices = readyaml(&ops, std::string("confighackrf.yml"));
 		}
 		else{
-			signaldevices = readyaml(&ops,std::string("config.yml"));
+			signaldevices = readyaml(&ops, std::string("config.yml"));
 		}
 
 		cout << "Using cdsp implementation & version " << cdsp::implementation() << " " << cdsp::version() << endl;			
@@ -298,16 +301,15 @@ int main(int argc, char **argv)
 				transport->send(); //main thread just waits on data and publishes when available.
 			}
 
-			coherent.request_exit(); 
-			coherent.join();
 			ref_dev->stop();
 			ref_dev->request_exit();
-			ref_dev->close();
-
 			for (auto d : v_devices){
 				d->stop();
 				d->request_exit();
 			}
+			coherent.request_exit();
+			coherent.join();
+			ref_dev->close();
 
 			console.request_exit();
 
@@ -321,7 +323,7 @@ int main(int argc, char **argv)
 				std::cerr.rdbuf( old );
 				close(stderr_pipe[0]);
 			}
-			
+
 			delete startbarrier;
 			delete ref_dev;
 			delete refnoise;
@@ -414,16 +416,15 @@ int main(int argc, char **argv)
 			transport->send(); //main thread just waits on data and publishes when available.
 		}
 
-		coherent.request_exit(); 
-		coherent.join();
 		ref_dev->stop();
 		ref_dev->request_exit();
-		ref_dev->close();
-
 		for (auto d : v_devices){
 			d->stop();
 			d->request_exit();
 		}
+		coherent.request_exit();
+		coherent.join();
+		ref_dev->close();
 
 		console.request_exit();
 
@@ -437,7 +438,7 @@ int main(int argc, char **argv)
 			std::cerr.rdbuf( old );
 			close(stderr_pipe[0]);
 		}
-		
+
 		delete startbarrier;
 		delete ref_dev;
 		delete refnoise;

@@ -161,6 +161,7 @@ int chackrf::open(std::string name){
 int chackrf::close(){
 	hackrf_close(dev);
 	dev = NULL;
+	return 0;
 }
 
 
@@ -180,6 +181,7 @@ int chackrf::set_agc_mode(bool flag){
 
 int chackrf::set_tuner_gain(int gain){
 	rfgain = gain;
+	return gain;
 	//cout << "Trying to set tuner gain " << to_string(devnum) << endl;
 	//return rtlsdr_set_tuner_gain(dev, gain);
 }

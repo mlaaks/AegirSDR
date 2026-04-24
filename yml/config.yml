@@ -16,7 +16,7 @@ parameters:
   dtype: int
   default: 2000000
   #SDR devicestrings in order we want them to be evaluated
-  #referencedevice is a special case, but is also used for signals
+  #referencedevice is a special case, but it is also used for signals
   #in Aegir
 - id: devices
   referencedevice: '1000'

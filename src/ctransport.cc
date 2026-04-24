@@ -148,14 +148,14 @@ int ctransport::send(){
 	}
 
 	if (f32bit){
-		socket->send(packetbuf_f32_1.get(),packetlen,0); //zmq::send_flags::none
+		socket->send(zmq::buffer(packetbuf_f32_1.get(), packetlen), zmq::send_flags::none);
 	}
 	else{
-    	socket->send(packetbuf1.get(),packetlen,0);
-    }
+		socket->send(zmq::buffer(packetbuf1.get(), packetlen), zmq::send_flags::none);
+	}
 
     //debug
-    debugsocket->send(pcorrection.data(),nchannels*sizeof(std::complex<float>),0);
+    debugsocket->send(zmq::buffer(pcorrection.data(), nchannels*sizeof(std::complex<float>)), zmq::send_flags::none);
     return 0;
 }
 

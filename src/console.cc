@@ -58,14 +58,13 @@ void remotec(std::string address){
 	zmq::message_t 		message;
 	int timeout = 250;
 
-	csocket.setsockopt(ZMQ_RCVTIMEO,&timeout,sizeof(int));
+	csocket.set(zmq::sockopt::rcvtimeo, timeout);
 	csocket.bind(address);
 
 	char *msg;
 	size_t len;
 	while(!exit_console){
-		int nreceived = csocket.recv(&message);
-		if (nreceived > 0) {
+		if (csocket.recv(message)) {
 			msg = static_cast<char*>(message.data());
 			len = message.size()/sizeof(char);
 			cout << "remote command: "<< std::string(msg) << endl;
@@ -93,11 +92,11 @@ void monitorc(std::string address){
 	 csocket.connect("inproc://monitor-client");
 
 	while(!exit_console){
-	 	csocket.recv(&message);
+	 	(void)csocket.recv(message);
 	 	//socket.getsockopt(ZMQ_RCVMORE,&more,&moresize); //get more? these messages should arrive in pairs.
 
 	 	if(more){ //second part ist the address..
-	 		csocket.recv(&message);
+	 		(void)csocket.recv(message);
 	 		addr = static_cast<char *>(message.data());
 	 	}
 
@@ -155,6 +154,8 @@ void cconsole::start(){
 
 void cconsole::request_exit(){
 	do_exit=true;
+	exit_console=true;
+	if (commandqueue) commandqueue->push(""); // unblock pop() in consolethreadf
 }
 
 

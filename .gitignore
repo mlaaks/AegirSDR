@@ -1,5 +1,6 @@
 #ignore build
 build/
+.claude/
 *.mat
 *.out
 *.zip

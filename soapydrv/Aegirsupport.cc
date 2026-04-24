@@ -82,11 +82,11 @@ public:
     }
 
     // --- Stream formats ---
-    std::vector<std::string> getStreamFormats(const int dir, const size_t) const override {
+    std::vector<std::string> getStreamFormats(const int, const size_t) const override {
         return {SOAPY_SDR_CF32, SOAPY_SDR_CS8};
     }
 
-    std::string getNativeStreamFormat(const int dir, const size_t, double &fullScale) const override {
+    std::string getNativeStreamFormat(const int, const size_t, double &fullScale) const override {
         fullScale = 128.0;
         return SOAPY_SDR_CS8;
     }
@@ -134,7 +134,7 @@ public:
                    void *const *buffs,
                    const size_t numElems,
                    int &flags,
-                   long long &timeNs,
+                   long long &/*timeNs*/,
                    const long timeoutUs) override
     {
         StreamHandle *h = reinterpret_cast<StreamHandle *>(stream);
