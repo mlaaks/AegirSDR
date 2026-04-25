@@ -8,6 +8,7 @@ already been fixed - the code now exits cleanly.
 The config files have now been changed to yaml syntax. Thus, the dependencies also include yaml-cpp, a thing that I regret.
 Probably I will get rid of that dependency and code a simple parser myself.
 
+RUNNING ON A VM IS DISCOURAGED AS IT WILL NOT SYNCHRONIZE.
 
 Installation instructions are as follows:
 
