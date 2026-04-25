@@ -85,9 +85,6 @@ void ccontrol::threadf(ccontrol *ctx){
 	struct timespec tsp = {1,0L};
 	long int        tns = 0L;
 	time_t	 		 ts = 0;
-
-	//std::cout << "entering control thread with do exit " << std::to_string(ctx->do_exit) << std::endl;
-	//usleep(16*32800); //UGLY! //this should be resolved: if this wait is removed, segfault happens...
 	
 	while(!ctx->do_exit){
 		if(!ctx->dev->wait_synchronized()){

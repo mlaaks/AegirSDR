@@ -359,6 +359,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 			ref_dev->set_agc_mode(ops.agc);
+			//ref_dev->set_tuner_gain_mode(0);
 
 			ref_dev->set_transport(transport);
 			if (ops.krakenbiastee){
@@ -394,6 +395,7 @@ int main(int argc, char **argv)
 				else
 				{
 					v_devices.back()->set_agc_mode(ops.agc); //openin signaldevice succeeded
+					//v_devices.back()->set_tuner_gain_mode(0);
 					v_devices.back()->set_transport(transport);
 				}
 			}

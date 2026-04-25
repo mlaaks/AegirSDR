@@ -197,32 +197,28 @@ int ctransport::convert_to_network_byte_order(uint32_t loc){
 }
 
 int ctransport::write(uint32_t channeln,uint32_t readcnt,const std::complex<float> *in){
-    uint32_t loc;
-
-    if (noheader){
-        loc = f32bit? channeln*(blocksize>>1): channeln*blocksize;
-    }
-    else{
-        //fill dynamic size part of header, write readcounts
-        if (f32bit){
-        	*(((uint32_t *)packetbuf_f32_0.get()) + sizeof(hdr0)/sizeof(uint32_t)+channeln)=readcnt;
-        	loc = (sizeof(hdr0)+nchannels*sizeof(uint32_t)) + channeln*(blocksize>>1);
+    if (f32bit) {
+        size_t header_bytes = 0;
+        if (!noheader) {
+            *(((uint32_t *)packetbuf_f32_0.get()) + sizeof(hdr0)/sizeof(uint32_t) + channeln) = readcnt;
+            header_bytes = sizeof(hdr0) + nchannels * sizeof(uint32_t);
         }
-        else{
-        	*(((uint32_t *)packetbuf0.get()) + sizeof(hdr0)/sizeof(uint32_t)+channeln)=readcnt;
-        	loc = (sizeof(hdr0)+nchannels*sizeof(uint32_t)) + channeln*blocksize;
+        const size_t channel_bytes = (blocksize >> 1) * sizeof(std::complex<float>);
+        const size_t byte_loc = header_bytes + (size_t)channeln * channel_bytes;
+        std::memcpy((uint8_t*)packetbuf_f32_0.get() + byte_loc, in, channel_bytes);
+        if (rowmajor){
+            convert_to_rowmajor(byte_loc / sizeof(std::complex<float>));
         }
     }
-
-    if(f32bit){
-    	std::memcpy((std::complex<float> *) packetbuf_f32_0.get()+loc,in,(blocksize>>1)*sizeof(std::complex<float>));
-    	
-    	if(rowmajor){
-    		convert_to_rowmajor(loc);
-    	}
-    }
-    else{
-    	cdsp::convto8bit((std::complex<int8_t> *) (packetbuf0.get()+loc),in,blocksize); //verify blocksize issue, define nsamples or sth.
+    else {
+        uint32_t loc;
+        if (noheader) {
+            loc = channeln * blocksize;
+        } else {
+            *(((uint32_t *)packetbuf0.get()) + sizeof(hdr0)/sizeof(uint32_t) + channeln) = readcnt;
+            loc = (sizeof(hdr0) + nchannels * sizeof(uint32_t)) + channeln * blocksize;
+        }
+        cdsp::convto8bit((std::complex<int8_t> *)(packetbuf0.get() + loc), in, blocksize);
     }
     return 0;
 }

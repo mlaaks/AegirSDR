@@ -14,7 +14,7 @@ parameters:
 - id: samplerate
   label: Frequency [Hz]
   dtype: int
-  default: 2000000
+  default: 2048000
   #SDR devicestrings in order we want them to be evaluated
   #referencedevice is a special case, but it is also used for signals
   #in Aegir
