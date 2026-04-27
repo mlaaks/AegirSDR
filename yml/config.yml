@@ -10,7 +10,7 @@ parameters:
 - id: freq
   label: Frequency [Hz]
   dtype: real
-  default: 1575.42e6
+  default: 95.5e6
 - id: samplerate
   label: Frequency [Hz]
   dtype: int

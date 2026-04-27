@@ -228,55 +228,6 @@ int cconsole::cmdlist(std::string opt){
 	return 0;				
 }
 
-
-//Flagged for deletion. No need to add or delete devices at runtime
-int cconsole::cmddel(std::string opt){
-	for(lvector<csdrdevice*>::iterator d = devices->begin(); d != devices->end(); ++d){
-		if (opt.compare((*d)->get_devname()) == 0){
-			
-
-			//devices->lock();				 //this is too slow, interrupts streaming, but currently only way to avoid the deadlock situation....
-			cout << "stopping " << opt << endl;
-			(*d)->stop();
-			cout << "exiting " << opt << endl;
-			(*d)->request_exit();
-			cout << "closing " << opt << endl;
-			(*d)->close();
-			cout << "deleting pointer " << opt << endl;
-			csdrdevice *tmp = (*d);
-			devices->erase(d);
-			delete tmp; // delete after removal, since controller may be using the device until it's removed from container.
-			return 0;
-		}
-	}
-	cout << "'"<<opt<<"' not running"<<endl;
-	return -1;
-}
-
-//Flagged for deletion. No need to add or delete devices at runtime
-int cconsole::cmdadd(std::string opt){
-
-	for (auto *d : *devices)
-		if (opt.compare(d->get_devname())==0){
-			cout <<"'" << opt << "' already capturing" << endl;
-			return -1;
-		}
-
-	devices->push_back(new crtlsdr(refdev->get_asyncbufn(),refdev->get_blocksize(),refdev->get_samplerate(),refdev->get_fcenter()));
-	
-	if (devices->back()->open(opt)){
-		delete devices->back();
-		devices->pop_back();
-		cout<<"could not open '" << opt <<"'" << endl;
-	}
-	startbarrier = new barrier(2);
-	devices->back()->start(startbarrier);
-	startbarrier->wait();
-
-	delete startbarrier;
-    
-    return 0;
-}
 int cconsole::cmdrequest(std::string opt){
 
 	if (opt.compare("re")==0){

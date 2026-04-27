@@ -8,8 +8,7 @@
 clear all;close all;
 
 sdr = CZMQSDR('IPAddress','127.0.0.1');
-FESR = 240e3;
-NDEC = 5;
+FESR = 2e6;
 nSample = 2^16;
 scope = dsp.SpectrumAnalyzer(...
     'Name',             'Spectrum',...
@@ -23,61 +22,12 @@ scope = dsp.SpectrumAnalyzer(...
     'StartFrequency',   -FESR/2, ...
     'StopFrequency',    FESR/2);
 
-addpath('/u/53/laaksom17/unix/source/SoftGNSS');
-addpath('/u/53/laaksom17/unix/source/SoftGN94SS/geoFunctions');
-addpath('/u/53/laaksom17/unix/source/SoftGNSS/include');
-
-settings=initSettings();
-samplesPerCode = round(settings.samplingFreq / ...
-            (settings.codeFreqBasis / settings.codeLength));
-
-%settings.acquisition.cohCodePeriods*settings.acquisition.nonCohSums+1)*samplesPerCode*6
-L1frequency=1575.42e6;
 sdr();
-%sdr.CenterFrequency = L1frequency+settingsettingss.IF;
-%fname = 'iq.bin';
-sdr.CenterFrequency = 106e6; %91.9e6;% -40e3;
-
-sdr();
-%delete(fname);
-hAudio = audioDeviceWriter(FESR/NDEC,'BufferSize',ceil(nSample*2/NDEC));
+%sdr.CenterFrequency = 95e6; %91.9e6;% -40e3;
 while 1
     x = sdr();
-    %x = x - mean(x);audioDeviceWriter
+    x = x - mean(x);
     scope(x);
-    %bbw(x(:,1));
-    %write8bitIQ(x(:,3),fname);
-    %write32,2bitIQ(x(:,3),fname);
-    %data = x(1:(settings.acquisition.cohCodePeriods*settings.acquisition.nonCohSums+1)*samplesPerCode*3,1);
-    %acqResults = acquisition(data.', (settings);
-    %z = fmdemod(y,Fc,fscanf3e6,75000)
-    %x = resample(x,FESR,240000);
-    s = x(2:end,1);
-    sd = x(1:end-1,1);
-
-    desic = angle(s.*conj(sd));
-    desic = resample(desic,1,NDEC);
-    hAudio(desic-mean(desic));
 end
 
 release(sdr);
-release(bbw);
-
-function n = write8bitIQ(x,fname)
-    file = fopen(fname, 'a');
-    
-    xinterleaved(1:2:size(x,1)*2,:) = real(x);dedesicsic
-    xinterleaved(2:2:size(x,1)*2,:) = imag(x);
-    
-    n = fwrite(file, int8(127.0*xinterleaved), 'int8');
-    fclose(file);
-end
-
-function n = write32bitIQ(x,fname)
-    file = fopen(fname,'a');
-    xinterleaved(1:2:size(x,1)*2,:) = real(x);
-    xinterleaved(2:2:size(x,1)*2,:) = imag(x);
-    
-    n = fwrite(file, single(127.0*xinterleaved), 'single');
-    fclose(file);
-end

@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 	int nfftqueue = 8; //limits the number of simultaneous fft -tickets
 	crefnoise * refnoise;
 
-	struct cl_ops ops = {"1000",false,2000000,uint32_t(1575.42e6),8,1<<14,4,100,100,false,"",false,false,false,false,false,false,false,false};
+	struct cl_ops ops = {"1000",false,2000000,uint32_t(95e6),8,1<<14,4,100,100,false,"",false,false,false,false,false,false,false,false};
 
 	parsecommandline(&ops,argc,argv);
 
@@ -242,8 +242,12 @@ int main(int argc, char **argv)
 			signaldevices = readyaml(&ops, std::string("config.yml"));
 		}
 
-		cout << "Using cdsp implementation & version " << cdsp::implementation() << " " << cdsp::version() << endl;			
+		//readyaml overwrites, so call parsecommandline again
+		optind = 1;
+		parsecommandline(&ops, argc, argv);
 
+		cout << "Using cdsp implementation & version " << cdsp::implementation() << " " << cdsp::version() << endl;			
+		cout << "Tuning to frequency: " << to_string(ops.fc) << endl;
 
 		if (ops.HackRF){
 
@@ -328,9 +332,6 @@ int main(int argc, char **argv)
 			delete ref_dev;
 			delete refnoise;
 			ctransport::cleanup();
-
-
-
 		}
 		else
 		{
@@ -359,7 +360,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 			ref_dev->set_agc_mode(ops.agc);
-			//ref_dev->set_tuner_gain_mode(0);
+			ref_dev->set_tuner_gain_mode(0);
 
 			ref_dev->set_transport(transport);
 			if (ops.krakenbiastee){
@@ -385,7 +386,7 @@ int main(int argc, char **argv)
 			else{
 				refnoise = new crefnoise("/dev/ttyACM0");
 			}
-
+			
 			for (auto n: vdefs){
 				v_devices.push_back(new crtlsdr(ops.asyncbufn,ops.blocksize,ops.fs,ops.fc)); //this must be made std::unique_ptr or std::shared_ptr...
 				if (v_devices.back()->open(n.serial)){
@@ -395,7 +396,7 @@ int main(int argc, char **argv)
 				else
 				{
 					v_devices.back()->set_agc_mode(ops.agc); //openin signaldevice succeeded
-					//v_devices.back()->set_tuner_gain_mode(0);
+					v_devices.back()->set_tuner_gain_mode(0);
 					v_devices.back()->set_transport(transport);
 				}
 			}
