@@ -20,7 +20,7 @@ if (RASPBERRYPI)
 else (RASPBERRYPI)
 	
 	add_executable(AegirSDR ${SOURCES})
-	target_link_libraries(AegirSDR zmq pthread fftw3f volk rtlsdr hackrf stdc++ yaml-cpp)
+	target_link_libraries(AegirSDR zmq pthread fftw3f volk rtlsdr hackrf stdc++ yaml)
 
 	add_custom_command(
         TARGET AegirSDR POST_BUILD
