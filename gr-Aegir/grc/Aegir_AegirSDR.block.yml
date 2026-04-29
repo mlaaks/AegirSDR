@@ -1,0 +1,38 @@
+id: Aegir_AegirSDR
+label: AegirSDR Source
+category: '[Aegir]'
+
+templates:
+  imports: from gnuradio import Aegir
+  make: Aegir.AegirSDR(${address}, ${ctrl_address}, ${nchannels}, ${blocksize}, ${timeout_ms})
+
+parameters:
+- id: address
+  label: Data Address
+  dtype: string
+  default: tcp://localhost:5555
+- id: ctrl_address
+  label: Control Address
+  dtype: string
+  default: tcp://localhost:5556
+- id: nchannels
+  label: Number of Channels
+  dtype: int
+  default: 2
+- id: blocksize
+  label: Block Size (complex samples)
+  dtype: int
+  default: 8192
+- id: timeout_ms
+  label: Timeout (ms)
+  dtype: int
+  default: 100
+
+inputs:
+
+outputs:
+- label: out
+  dtype: complex
+  multiplicity: ${ nchannels }
+
+file_format: 1
