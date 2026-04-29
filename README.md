@@ -11,17 +11,18 @@ also compiled separately and needs to be copied to Matlab path. See compiling.tx
 
 RUNNING ON A VM IS DISCOURAGED AS IT WILL NOT SYNCHRONIZE due to system timing inaccuracies.
 
-Once run, the program presents the user with a console where you can control parameters during runtime. Commands are:
+Once run, the program presents the user with a console where you can control parameters during runtime. This is under development
+and removing readline made using this cumbersome. However, the commands are:
 
-	help - does nothing
+	help - does nothing currently
 	samplerate - change samplerate
-	status - list channels, lags and correlation magnitudes, synchronization
+	status - list channels, lags and correlation magnitudes, synchronization of channels can be seen here
 	lists - list signal channels
 	nop - do nothing
 	logs - does nothing
 	quit - exit the program
 	tuningfrequency [freq] - tune to frequencyy
-	request re - reference noise enable (calibration phase on)
+	request re - reference noise enable (calibration phase on, phase coefficients are updated continuously)
 	request rd - reference noise disable (signal acquisition phase)
 	phase - list phasecorrections in degrees
 	tunergain - change tuner gain
