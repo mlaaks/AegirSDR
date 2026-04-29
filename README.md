@@ -2,18 +2,33 @@
 
 Extended support for similar SDR platforms as in our previous _coherent-rtlsdr_ project. This includes e.g. KrakenSDR.
 One goal is to add support for SoapySDR API. By agreement of all the authors, we changed the licensing from GPL3 to the
-MIT license. The code repository is now public, but not yet advertised anywhere. Still have things to fix, many things have
-already been fixed - the code now exits cleanly.
+MIT license, this means no more GNU Readline for the console. The code repository is now public, but not yet advertised anywhere.
+Still have things to fix, many things have already been fixed - the code now exits cleanly. The config files have now been changed 
+to yaml syntax via libyaml-dev.
 
-The config files have now been changed to yaml syntax. Thus, the dependencies also include yaml-cpp, a thing that I regret.
-Probably I will get rid of that dependency and code a simple parser myself. The switch to libyaml has been made!
+We support GNU Radio (gr-Aegir), Matlab and SoapySDR (untested). The gr-Aegir is built separately with cmake. Matlab client is
+also compiled separately and needs to be copied to Matlab path. See compiling.txt
 
+RUNNING ON A VM IS DISCOURAGED AS IT WILL NOT SYNCHRONIZE due to system timing inaccuracies.
 
-RUNNING ON A VM IS DISCOURAGED AS IT WILL NOT SYNCHRONIZE.
+Once run, the program presents the user with a console where you can control parameters during runtime. Commands are:
+
+	help - does nothing
+	samplerate - change samplerate
+	status - list channels, lags and correlation magnitudes, synchronization
+	lists - list signal channels
+	nop - do nothing
+	logs - does nothing
+	quit - exit the program
+	tuningfrequency [freq] - tune to frequencyy
+	request re - reference noise enable (calibration phase on)
+	request rd - reference noise disable (signal acquisition phase)
+	phase - list phasecorrections in degrees
+	tunergain - change tuner gain
 
 Installation instructions are as follows:
 
-# Get dependencies on debian:
+# Get dependencies on debian and derivatives:
 
 ```
 sudo apt update
