@@ -33,7 +33,7 @@ Installation instructions are as follows:
 
 ```
 sudo apt update
-sudo apt install build-essential git cmake libusb-1.0-0-dev libzmq3-dev libfftw3-dev libvolk-dev libreadline-dev libyaml-dev
+sudo apt install build-essential git cmake libusb-1.0-0-dev libzmq3-dev libfftw3-dev libvolk-dev libyaml-dev
 ```
 
 # Install the KrakenRF RTL-SDR kernel driver:
@@ -78,7 +78,7 @@ First install dependencies using apt-get:
 
 ```
 sudo apt update
-sudo apt install build-essential git cmake libusb-1.0-0-dev libzmq3-dev libfftw3-dev libreadline-dev
+sudo apt install build-essential git cmake libusb-1.0-0-dev libzmq3-dev libfftw3-dev libyaml-dev
 ```
 
 VOLK (Vector Optimized Library of Kernels) must be built from source:
