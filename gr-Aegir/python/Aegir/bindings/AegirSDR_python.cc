@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(AegirSDR.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(7dddb57f13894802019a05793e6439c7)                     */
+/* BINDTOOL_HEADER_FILE_HASH(9ddcbfb9e55cc8890e2eb2d4a79e9bac)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -41,9 +41,15 @@ void bind_AegirSDR(py::module& m)
              py::arg("ctrl_address"),
              py::arg("nchannels"),
              py::arg("blocksize"),
+             py::arg("frequency"),
+             py::arg("samplerate"),
+             py::arg("gain"),
              py::arg("timeout_ms") = 100,
              D(AegirSDR,make)
         )
+        .def("set_frequency",  &AegirSDR::set_frequency,  py::arg("freq"))
+        .def("set_samplerate", &AegirSDR::set_samplerate, py::arg("samplerate"))
+        .def("set_gain",       &AegirSDR::set_gain,       py::arg("gain"))
         
 
 

@@ -40,7 +40,14 @@ namespace gr {
                        const std::string& ctrl_address,
                        int nchannels,
                        int blocksize,
+                       double frequency,
+                       double samplerate,
+                       float gain,
                        int timeout_ms = 100);
+
+      virtual void set_frequency(double freq) = 0;
+      virtual void set_samplerate(double samplerate) = 0;
+      virtual void set_gain(float gain) = 0;
     };
 
   } // namespace Aegir

@@ -4,7 +4,11 @@ category: '[Aegir]'
 
 templates:
   imports: from gnuradio import Aegir
-  make: Aegir.AegirSDR(${address}, ${ctrl_address}, ${nchannels}, ${blocksize}, ${timeout_ms})
+  make: Aegir.AegirSDR(${address}, ${ctrl_address}, ${nchannels}, ${blocksize}, ${frequency}, ${samplerate}, ${gain}, ${timeout_ms})
+  callbacks:
+  - set_frequency(${frequency})
+  - set_samplerate(${samplerate})
+  - set_gain(${gain})
 
 parameters:
 - id: address
@@ -23,6 +27,18 @@ parameters:
   label: Block Size (complex samples)
   dtype: int
   default: 8192
+- id: frequency
+  label: Frequency (Hz)
+  dtype: real
+  default: 100e6
+- id: samplerate
+  label: Sample Rate (Hz)
+  dtype: real
+  default: 2048000
+- id: gain
+  label: Tuner Gain (dB)
+  dtype: float
+  default: 30
 - id: timeout_ms
   label: Timeout (ms)
   dtype: int
